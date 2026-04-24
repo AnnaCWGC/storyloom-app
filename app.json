@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Storyloom",
+    "slug": "storyloom-app",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}

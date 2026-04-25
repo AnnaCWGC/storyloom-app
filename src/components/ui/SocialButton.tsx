@@ -51,5 +51,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.typography.body,
     fontWeight: '600',
+    fontFamily: theme.fonts.semiBold,
   },
 });

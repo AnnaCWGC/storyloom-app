@@ -1,76 +1,184 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AppButton } from '../../components/ui/AppButton';
+import { ContinueReadingCard } from '../../components/home/ContinueReadingCard';
+import { FeaturedStoryCard } from '../../components/home/FeaturedStoryCard';
+import { GenreChips } from '../../components/home/GenreChips';
+import { HomeHeader } from '../../components/home/HomeHeader';
+import { SearchBar } from '../../components/home/SearchBar';
+import { SectionHeader } from '../../components/home/SectionHeader';
+import { StoryCoverCard } from '../../components/home/StoryCoverCard';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { mockStories } from '../../data/mockStories';
+import { useStories } from '../../hooks/useStories';
 import { useAppSelector } from '../../store/hooks';
 import { theme } from '../../theme';
 
 export function HomeScreen({ navigation }: any) {
-  const firstStory = mockStories[0];
+  const [search, setSearch] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState('All');
+  const insets = useSafeAreaInsets();
+  const { stories, loading } = useStories();
+
   const user = useAppSelector(state => state.user);
+  const progressByStory = useAppSelector(
+    state => state.storyProgress.progressByStory,
+  );
+
+  const featuredStory = stories[0];
+
+  const filteredStories = useMemo(() => {
+    return stories.filter(story => {
+      const matchesGenre =
+        selectedGenre === 'All' || story.genres.includes(selectedGenre as any);
+
+      const normalizedSearch = search.trim().toLowerCase();
+
+      const matchesSearch =
+        !normalizedSearch ||
+        story.title.toLowerCase().includes(normalizedSearch) ||
+        story.subtitle?.toLowerCase().includes(normalizedSearch) ||
+        story.genres.some(genre =>
+          genre.toLowerCase().includes(normalizedSearch),
+        );
+
+      return matchesGenre && matchesSearch;
+    });
+  }, [search, selectedGenre, stories]);
+
+  const popularStories = filteredStories.filter(
+    story => story.id !== featuredStory?.id,
+  );
+
+  const continuedStories = stories.filter(story => progressByStory[story.id]);
+
+  function goToStoryDetails(storyId: string) {
+    navigation.navigate('Story', {
+      screen: 'StoryDetails',
+      params: {
+        storyId,
+      },
+    });
+  }
+
+  function continueStory(storyId: string) {
+    const progress = progressByStory[storyId];
+
+    if (!progress) return;
+
+    navigation.navigate('Story', {
+      screen: 'StoryReader',
+      params: {
+        storyId,
+        chapterId: progress.chapterId,
+      },
+    });
+  }
 
   return (
     <ScreenContainer>
-      <View style={styles.content}>
-        <Text style={styles.title}>Hello, {user.name}</Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingTop: insets.top + 8,
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <HomeHeader
+          name={user.name}
+          diamonds={user.diamonds}
+          avatar={user.avatar}
+        />
 
-        <Text style={styles.subtitle}>What do you want to live today?</Text>
+        <SearchBar value={search} onChangeText={setSearch} />
 
-        <View style={styles.card}>
-          <Text style={styles.storyTitle}>{firstStory.title}</Text>
-          <Text style={styles.storyDescription}>{firstStory.subtitle}</Text>
+        <GenreChips
+          selectedGenre={selectedGenre}
+          onSelectGenre={setSelectedGenre}
+        />
 
-          <AppButton
-            title="Ver história"
-            onPress={() =>
-              navigation.navigate('Story', {
-                screen: 'StoryDetails',
-                params: {
-                  storyId: firstStory.id,
-                },
-              })
-            }
-          />
-        </View>
-      </View>
+        {loading || !featuredStory ? (
+          <Text style={styles.loadingText}>Loading stories...</Text>
+        ) : (
+          <>
+            <FeaturedStoryCard
+              story={featuredStory}
+              onPress={() => goToStoryDetails(featuredStory.id)}
+            />
+
+            <SectionHeader title="Popular now" />
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalList}
+              style={styles.popularScroll}
+            >
+              {popularStories.map(story => (
+                <StoryCoverCard
+                  key={story.id}
+                  story={story}
+                  onPress={() => goToStoryDetails(story.id)}
+                />
+              ))}
+            </ScrollView>
+          </>
+        )}
+
+        {continuedStories.length ? (
+          <View style={styles.section}>
+            <SectionHeader title="Continue reading" />
+
+            {continuedStories.map(story => {
+              const progress = progressByStory[story.id];
+
+              return (
+                <ContinueReadingCard
+                  key={story.id}
+                  story={story}
+                  progress={progress.progress}
+                  chapterLabel={
+                    story.chapters.find(
+                      chapter => chapter.id === progress.chapterId,
+                    )?.title ?? progress.chapterId
+                  }
+                  onPress={() => continueStory(story.id)}
+                />
+              );
+            })}
+          </View>
+        ) : null}
+      </ScrollView>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
+  scroll: {
     flex: 1,
-    padding: theme.spacing.xl,
+    backgroundColor: theme.colors.background,
   },
-  title: {
-    color: theme.colors.text,
-    fontSize: theme.typography.title,
-    fontWeight: '700',
-    marginTop: theme.spacing.xl,
+  content: {
+    paddingHorizontal: theme.spacing.xxl,
+    paddingBottom: 120,
   },
-  subtitle: {
-    color: theme.colors.textSecondary,
-    fontSize: theme.typography.body,
-    marginTop: theme.spacing.xs,
+  horizontalList: {
+    paddingRight: theme.spacing.xxl,
+  },
+  popularScroll: {
     marginBottom: theme.spacing.xxl,
+    overflow: 'visible',
   },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.xl,
-    padding: theme.spacing.xl,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+  section: {
+    marginTop: theme.spacing.sm,
   },
-  storyTitle: {
-    color: theme.colors.text,
-    fontSize: theme.typography.subtitle,
-    fontWeight: '700',
-    marginBottom: theme.spacing.sm,
-  },
-  storyDescription: {
+  loadingText: {
     color: theme.colors.textSecondary,
-    fontSize: theme.typography.body,
-    marginBottom: theme.spacing.xl,
+    fontSize: theme.typography.small,
+    fontWeight: '700',
+    marginBottom: theme.spacing.xxl,
   },
 });

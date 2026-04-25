@@ -1,3 +1,5 @@
+import { ImageSourcePropType } from 'react-native';
+
 export type StoryGenre =
   | 'Romance'
   | 'Fantasy'
@@ -22,7 +24,7 @@ export type StoryChoice = {
 
 export type StoryScene = {
   id: string;
-  backgroundImage: string;
+  backgroundImage: ImageSourcePropType;
   speaker?: string;
   text: string;
   choices?: StoryChoice[];
@@ -43,8 +45,8 @@ export type Story = {
   description: string;
   genres: StoryGenre[];
   status: 'ongoing' | 'completed' | 'new';
-  coverImage: string;
-  bannerImage: string;
+  coverImage: ImageSourcePropType;
+  bannerImage: ImageSourcePropType;
   rating?: number;
   chapterCount: number;
   progress?: number;

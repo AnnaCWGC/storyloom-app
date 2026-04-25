@@ -1,44 +1,114 @@
-import { useMemo, useState } from 'react';
-import { Text, View, StyleSheet, Pressable } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  ImageBackground,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { mockStories } from '../../data/mockStories';
-import { useAppDispatch } from '../../store/hooks';
-import { registerChoice, saveProgress } from '../../store/slices/storyProgressSlice';
+import { ReaderTopBar } from '../../components/reader/ReaderTopBar';
+import { DialogueBox } from '../../components/reader/DialogueBox';
+import { useStories } from '../../hooks/useStories';
 import { theme } from '../../theme';
+import { StoryChoice } from '../../types/story';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import {
+  registerChoice,
+  saveProgress,
+} from '../../store/slices/storyProgressSlice';
+import { spendDiamonds } from '../../store/slices/userSlice';
 
-export function StoryReaderScreen({ route }: any) {
+export function StoryReaderScreen({ route, navigation }: any) {
   const { storyId, chapterId } = route.params;
 
-  const story = mockStories.find(item => item.id === storyId);
+  const dispatch = useAppDispatch();
+  const { findStoryById, loading } = useStories();
+
+  const user = useAppSelector(state => state.user);
+  const savedProgress = useAppSelector(
+    state => state.storyProgress.progressByStory[storyId],
+  );
+
+  const story = findStoryById(storyId);
   const chapter = story?.chapters.find(item => item.id === chapterId);
 
-  const [currentSceneId, setCurrentSceneId] = useState(chapter?.scenes[0]?.id);
-  const dispatch = useAppDispatch();
+  const initialSceneId =
+    savedProgress?.chapterId === chapterId
+      ? savedProgress.sceneId
+      : chapter?.scenes[0]?.id;
+
+  const [currentSceneId, setCurrentSceneId] = useState(initialSceneId);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCurrentSceneId(initialSceneId);
+  }, [initialSceneId]);
 
   const currentScene = useMemo(() => {
     return chapter?.scenes.find(scene => scene.id === currentSceneId);
   }, [chapter, currentSceneId]);
 
+  const currentSceneIndex = useMemo(() => {
+    return chapter?.scenes.findIndex(scene => scene.id === currentSceneId) ?? 0;
+  }, [chapter, currentSceneId]);
+
+  const currentProgress = useMemo(() => {
+    if (!chapter?.scenes.length) return 0;
+
+    return Math.min(1, (currentSceneIndex + 1) / chapter.scenes.length);
+  }, [chapter, currentSceneIndex]);
+
+  function getSceneProgress(sceneId: string) {
+    if (!chapter?.scenes.length) return 0;
+
+    const sceneIndex = chapter.scenes.findIndex(scene => scene.id === sceneId);
+
+    if (sceneIndex < 0) return currentProgress;
+
+    return Math.min(1, (sceneIndex + 1) / chapter.scenes.length);
+  }
+
   if (!story || !chapter || !currentScene) {
     return (
-      <ScreenContainer>
-        <View style={styles.content}>
-          <Text style={styles.title}>Cena não encontrada</Text>
-        </View>
-      </ScreenContainer>
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>
+          {loading ? 'Loading scene...' : 'Cena não encontrada'}
+        </Text>
+      </View>
     );
   }
 
   const scene = currentScene;
 
-  function goToNextScene() {
-    if (scene.nextSceneId) {
-      setCurrentSceneId(scene.nextSceneId);
-    }
+  function persistProgress(nextSceneId: string) {
+    dispatch(
+      saveProgress({
+        storyId,
+        chapterId,
+        sceneId: nextSceneId,
+        progress: getSceneProgress(nextSceneId),
+      }),
+    );
   }
 
-  function handleChoicePress(choice: any) {
+  function handleGoToScene(nextSceneId: string) {
+    persistProgress(nextSceneId);
+    setCurrentSceneId(nextSceneId);
+  }
+
+  function handleChoicePress(choice: StoryChoice) {
+    if (choice.isPremium) {
+      const cost = choice.cost ?? 0;
+
+      if (user.diamonds < cost) {
+        setFeedbackMessage('Você não tem diamantes suficientes para essa escolha.');
+        return;
+      }
+
+      dispatch(spendDiamonds(cost));
+    }
+
     dispatch(
       registerChoice({
         storyId,
@@ -50,132 +120,134 @@ export function StoryReaderScreen({ route }: any) {
       }),
     );
 
+    if (choice.effect?.message) {
+      setFeedbackMessage(choice.effect.message);
+    } else {
+      setFeedbackMessage(null);
+    }
+
+    handleGoToScene(choice.nextSceneId);
+  }
+
+  function handleContinue() {
+    if (!scene.nextSceneId) return;
+
+    setFeedbackMessage(null);
+    handleGoToScene(scene.nextSceneId);
+  }
+
+  function handleBack() {
+    navigation.goBack();
+  }
+
+  function handleEndChapter() {
     dispatch(
       saveProgress({
         storyId,
         chapterId,
-        sceneId: choice.nextSceneId,
-        progress: 0.2,
+        sceneId: scene.id,
+        progress: 1,
       }),
     );
 
-    setCurrentSceneId(choice.nextSceneId);
+    navigation.navigate('App');
   }
 
+  const canContinue = Boolean(
+    !scene.choices?.length && scene.nextSceneId,
+  );
+
+  const isEnd = Boolean(
+    !scene.choices?.length && !scene.nextSceneId,
+  );
+
   return (
-    <ScreenContainer>
+    <ImageBackground
+      source={scene.backgroundImage || story.bannerImage}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <LinearGradient
+        colors={[
+          'rgba(15,13,22,0.20)',
+          'rgba(15,13,22,0.36)',
+          'rgba(15,13,22,0.82)',
+          theme.colors.background,
+        ]}
+        locations={[0, 0.42, 0.78, 1]}
+        style={styles.overlay}
+      />
+
+      <ReaderTopBar
+        chapterTitle={chapter.title}
+        diamonds={user.diamonds}
+        progress={currentProgress}
+        onBack={handleBack}
+      />
+
       <View style={styles.content}>
-        <Text style={styles.chapterTitle}>{chapter.title}</Text>
+        {feedbackMessage ? (
+          <View style={styles.feedbackPill}>
+            <Text style={styles.feedbackText}>{feedbackMessage}</Text>
+          </View>
+        ) : null}
 
-        <View style={styles.dialogueBox}>
-          {scene.speaker ? <Text style={styles.speaker}>{scene.speaker}</Text> : null}
-
-          <Text style={styles.dialogueText}>{scene.text}</Text>
-
-          {scene.choices?.map(choice => (
-            <Pressable
-              key={choice.id}
-              style={[styles.choiceButton, choice.isPremium && styles.premiumChoice]}
-              onPress={() => handleChoicePress(choice)}
-            >
-              <Text style={[styles.choiceText, choice.isPremium && styles.premiumChoiceText]}>
-                {choice.isPremium ? `💎 ${choice.cost}  ` : ''}
-                {choice.text}
-              </Text>
-            </Pressable>
-          ))}
-
-          {!scene.choices?.length && scene.nextSceneId ? (
-            <Pressable style={styles.nextButton} onPress={goToNextScene}>
-              <Text style={styles.nextText}>Continuar</Text>
-            </Pressable>
-          ) : null}
-
-          {!scene.choices?.length && !scene.nextSceneId ? (
-            <Text style={styles.endText}>Fim do capítulo</Text>
-          ) : null}
-        </View>
+        <DialogueBox
+          speaker={scene.speaker}
+          text={scene.text}
+          choices={scene.choices}
+          canContinue={canContinue}
+          isEnd={isEnd}
+          onChoicePress={handleChoicePress}
+          onContinue={handleContinue}
+          onEnd={handleEndChapter}
+        />
       </View>
-    </ScreenContainer>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
   content: {
     flex: 1,
-    padding: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xxl,
+    paddingBottom: 48,
     justifyContent: 'flex-end',
   },
-  chapterTitle: {
-    position: 'absolute',
-    top: 64,
+  feedbackPill: {
     alignSelf: 'center',
-    color: theme.colors.text,
-    fontSize: theme.typography.small,
-    fontWeight: '600',
-  },
-  title: {
-    color: theme.colors.text,
-    fontSize: theme.typography.title,
-    fontWeight: '700',
-  },
-  dialogueBox: {
-    backgroundColor: 'rgba(26, 22, 37, 0.96)',
-    borderRadius: theme.radius.xl,
-    padding: theme.spacing.xl,
+    maxWidth: '94%',
+    borderRadius: theme.radius.pill,
+    backgroundColor: 'rgba(26,22,37,0.88)',
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginBottom: theme.spacing.xxl,
-  },
-  speaker: {
-    color: theme.colors.primary,
-    fontSize: theme.typography.body,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  dialogueText: {
-    color: theme.colors.text,
-    fontSize: 18,
-    lineHeight: 28,
-    textAlign: 'center',
-    marginBottom: theme.spacing.xl,
-  },
-  choiceButton: {
-    minHeight: 52,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surfaceElevated,
-    justifyContent: 'center',
+    borderColor: 'rgba(244,114,182,0.28)',
     paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
     marginBottom: theme.spacing.md,
   },
-  premiumChoice: {
-    borderColor: theme.colors.secondary,
-    backgroundColor: 'rgba(244, 114, 182, 0.12)',
+  feedbackText: {
+    color: theme.colors.text,
+    fontSize: theme.typography.small,
+    fontWeight: '700',
+    textAlign: 'center',
   },
-  choiceText: {
+  emptyContainer: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.xxl,
+  },
+  emptyText: {
     color: theme.colors.text,
     fontSize: theme.typography.body,
-  },
-  premiumChoiceText: {
-    color: theme.colors.secondary,
-    fontWeight: '700',
-  },
-  nextButton: {
-    alignSelf: 'center',
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-  },
-  nextText: {
-    color: theme.colors.primary,
-    fontSize: theme.typography.body,
-    fontWeight: '700',
-  },
-  endText: {
-    color: theme.colors.textMuted,
-    textAlign: 'center',
-    fontSize: theme.typography.small,
+    fontWeight: '800',
   },
 });

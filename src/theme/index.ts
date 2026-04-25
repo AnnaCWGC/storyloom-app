@@ -50,4 +50,12 @@ export const theme = {
     small: 14,
     tiny: 12,
   },
+
+  fonts: {
+    displaySemiBold: 'CormorantGaramond-SemiBold',
+    regular: 'Inter-Regular',
+    medium: 'Inter-Medium',
+    semiBold: 'Inter-SemiBold',
+    bold: 'Inter-Bold',
+  },
 };

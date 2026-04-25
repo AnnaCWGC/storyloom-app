@@ -1,14 +1,52 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Bell,
+  BookOpen,
+  Gem,
+  Heart,
+  Library,
+  LogOut,
+  Moon,
+  Settings,
+  Sparkles,
+  User,
+  Zap,
+} from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { GradientButton } from '../../components/ui/GradientButton';
+import { ProfileStatCard } from '../../components/profile/ProfileStatCard';
+import { ProfileMenuItem } from '../../components/profile/ProfileMenuItem';
+import { ProfilePreferenceRow } from '../../components/profile/ProfilePreferenceRow';
 import { theme } from '../../theme';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
+import {
+  setMatureContentPreference,
+  setNotificationPreference,
+  setReduceMotionPreference,
+} from '../../store/slices/profileSlice';
 
-export function ProfileScreen() {
+export function ProfileScreen({ navigation }: any) {
+  const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
+
   const user = useAppSelector(state => state.user);
+  const progressByStory = useAppSelector(
+    state => state.storyProgress.progressByStory,
+  );
+  const favoriteStoryIds = useAppSelector(
+    state => state.library.favoriteStoryIds,
+  );
+  const preferences = useAppSelector(state => state.profile.preferences);
+
+  const storiesInProgress = Object.keys(progressByStory).length;
+  const favoriteCount = favoriteStoryIds.length;
+
+  function goToTab(tabName: string) {
+    navigation.navigate(tabName);
+  }
 
   function handleLogout() {
     dispatch(logout());
@@ -16,54 +54,282 @@ export function ProfileScreen() {
 
   return (
     <ScreenContainer>
-      <View style={styles.content}>
-        {user.avatar ? (
-          <Image source={{ uri: user.avatar }} style={styles.avatar} />
-        ) : null}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingTop: insets.top + 12,
+            paddingBottom: insets.bottom + 220,
+          },
+        ]}
+        scrollIndicatorInsets={{ bottom: insets.bottom + 120 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <LinearGradient
+          colors={['rgba(244,114,182,0.22)', 'rgba(168,85,247,0.12)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.profileCard}
+        >
+          <View style={styles.profileTopRow}>
+            {user.avatar ? (
+              <Image source={{ uri: user.avatar }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarFallback}>
+                <User size={32} color={theme.colors.text} />
+              </View>
+            )}
 
-        <Text style={styles.title}>Perfil</Text>
-        <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.diamonds}>💎 {user.diamonds} diamantes</Text>
+            <View style={styles.profileInfo}>
+              <Text style={styles.name}>{user.name}</Text>
+              <Text style={styles.username}>Storyloom reader</Text>
+            </View>
 
-        <View style={styles.buttonWrapper}>
-          <GradientButton title="Sair da conta" onPress={handleLogout} />
+            <View style={styles.settingsCircle}>
+              <Settings size={20} color={theme.colors.secondary} />
+            </View>
+          </View>
+
+          <View style={styles.diamondRow}>
+            <View style={styles.diamondIcon}>
+              <Gem size={20} color={theme.colors.white} fill={theme.colors.secondary} />
+            </View>
+
+            <View>
+              <Text style={styles.diamondValue}>{user.diamonds}</Text>
+              <Text style={styles.diamondLabel}>diamonds available</Text>
+            </View>
+          </View>
+        </LinearGradient>
+
+        <View style={styles.statsRow}>
+          <ProfileStatCard
+            icon={<BookOpen size={18} color={theme.colors.secondary} />}
+            value={storiesInProgress}
+            label="In progress"
+          />
+
+          <ProfileStatCard
+            icon={<Heart size={18} color={theme.colors.secondary} />}
+            value={favoriteCount}
+            label="Favorites"
+          />
+
+          <ProfileStatCard
+            icon={<Sparkles size={18} color={theme.colors.secondary} />}
+            value="MVP"
+            label="Account"
+          />
         </View>
-      </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick access</Text>
+
+          <ProfileMenuItem
+            icon={<Library size={20} color={theme.colors.secondary} />}
+            title="My library"
+            description="Continue stories and view your favorites."
+            rightText={`${storiesInProgress + favoriteCount}`}
+            onPress={() => goToTab('Library')}
+          />
+
+          <ProfileMenuItem
+            icon={<Gem size={20} color={theme.colors.secondary} />}
+            title="Rewards"
+            description="Collect diamonds and daily bonuses."
+            rightText={`${user.diamonds}`}
+            onPress={() => goToTab('Rewards')}
+          />
+
+          <ProfileMenuItem
+            icon={<Zap size={20} color={theme.colors.secondary} />}
+            title="Reading activity"
+            description="Mock area for future streaks and achievements."
+            rightText="Soon"
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Preferences</Text>
+
+          <ProfilePreferenceRow
+            title="Notifications"
+            description="Get reminders about new chapters and rewards."
+            value={preferences.notificationsEnabled}
+            onValueChange={value =>
+              dispatch(setNotificationPreference(value))
+            }
+          />
+
+          <ProfilePreferenceRow
+            title="Mature content"
+            description="Allow stories with darker or mature themes."
+            value={preferences.matureContentEnabled}
+            onValueChange={value =>
+              dispatch(setMatureContentPreference(value))
+            }
+          />
+
+          <ProfilePreferenceRow
+            title="Reduce motion"
+            description="Limit animations and visual transitions."
+            value={preferences.reduceMotionEnabled}
+            onValueChange={value =>
+              dispatch(setReduceMotionPreference(value))
+            }
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account</Text>
+
+          <ProfileMenuItem
+            icon={<Moon size={20} color={theme.colors.secondary} />}
+            title="Theme"
+            description="Dark romantic theme enabled."
+            rightText="Dark"
+          />
+
+          <ProfileMenuItem
+            icon={<Bell size={20} color={theme.colors.secondary} />}
+            title="App notifications"
+            description="Managed locally for this prototype."
+            rightText={preferences.notificationsEnabled ? 'On' : 'Off'}
+          />
+        </View>
+
+        <Pressable style={styles.logoutButton} onPress={handleLogout}>
+          <LogOut size={20} color={theme.colors.secondary} />
+          <Text style={styles.logoutText}>Sair da conta</Text>
+        </Pressable>
+      </ScrollView>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
+  scroll: {
     flex: 1,
-    padding: theme.spacing.xxl,
+    backgroundColor: theme.colors.background,
+  },
+  content: {
+    paddingHorizontal: theme.spacing.xxl,
+  },
+  profileCard: {
+    borderRadius: theme.radius.xxl,
+    padding: theme.spacing.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(244,114,182,0.28)',
+    marginBottom: theme.spacing.xxl,
+  },
+  profileTopRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: theme.spacing.xl,
   },
   avatar: {
-    width: 86,
-    height: 86,
-    borderRadius: 43,
-    marginBottom: theme.spacing.lg,
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.20)',
+    marginRight: theme.spacing.md,
   },
-  title: {
-    color: theme.colors.text,
-    fontSize: theme.typography.title,
-    fontWeight: '800',
-    marginBottom: theme.spacing.sm,
+  avatarFallback: {
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    backgroundColor: 'rgba(15,13,22,0.42)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing.md,
+  },
+  profileInfo: {
+    flex: 1,
   },
   name: {
     color: theme.colors.text,
-    fontSize: theme.typography.body,
-    fontWeight: '800',
-    marginBottom: theme.spacing.sm,
+    fontSize: 28,
+    fontWeight: '900',
+    fontFamily: theme.fonts.displaySemiBold,
   },
-  diamonds: {
+  username: {
     color: theme.colors.textSecondary,
-    fontSize: theme.typography.body,
+    fontSize: theme.typography.small,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  settingsCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(15,13,22,0.40)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  diamondRow: {
+    minHeight: 72,
+    borderRadius: theme.radius.xl,
+    backgroundColor: 'rgba(15,13,22,0.32)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    padding: theme.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  diamondIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: 'rgba(244,114,182,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing.md,
+  },
+  diamondValue: {
+    color: theme.colors.text,
+    fontSize: 24,
+    fontWeight: '900',
+  },
+  diamondLabel: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.tiny,
+    fontWeight: '700',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
     marginBottom: theme.spacing.xxl,
   },
-  buttonWrapper: {
-    width: 160,
+  section: {
+    marginBottom: theme.spacing.xxl,
+  },
+  sectionTitle: {
+    color: theme.colors.text,
+    fontSize: 20,
+    fontWeight: '800',
+    fontFamily: theme.fonts.displaySemiBold,
+    marginBottom: theme.spacing.md,
+  },
+  logoutButton: {
+    height: 56,
+    borderRadius: theme.radius.pill,
+    backgroundColor: 'rgba(244,114,182,0.10)',
+    borderWidth: 1,
+    borderColor: 'rgba(244,114,182,0.32)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+  },
+  logoutText: {
+    color: theme.colors.secondary,
+    fontSize: theme.typography.body,
+    fontWeight: '900',
   },
 });

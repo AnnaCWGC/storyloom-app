@@ -11,7 +11,8 @@ const initialState: UserState = {
   id: 'user-1',
   name: 'Anna',
   diamonds: 220,
-  avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
+  avatar:
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
 };
 
 const userSlice = createSlice({

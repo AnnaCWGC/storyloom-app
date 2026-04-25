@@ -34,11 +34,13 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.typography.title,
     fontWeight: '800',
+    fontFamily: theme.fonts.displaySemiBold,
     marginBottom: theme.spacing.md,
   },
   subtitle: {
     color: theme.colors.textSecondary,
     fontSize: theme.typography.body,
+    fontFamily: theme.fonts.regular,
     lineHeight: 24,
     marginBottom: theme.spacing.xxl,
   },

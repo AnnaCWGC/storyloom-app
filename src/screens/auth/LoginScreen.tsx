@@ -15,7 +15,7 @@ import { theme } from '../../theme';
 import { useAppDispatch } from '../../store/hooks';
 import { login } from '../../store/slices/authSlice';
 
-const HERO_IMAGE = require('../../assets/images/login-hero.png');
+const HERO_IMAGE = require('../../assets/images/auth/login-hero.png');
 
 export function LoginScreen({ navigation }: any) {
   const dispatch = useAppDispatch();
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: -1,
-    fontFamily: 'Georgia',
+    fontFamily: theme.fonts.displaySemiBold,
   },
 
   ornamentRow: {

@@ -19,16 +19,14 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { GradientButton } from '../../components/ui/GradientButton';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { useChapterEntry } from '../../hooks/useChapterEntry';
+import { useLibrary } from '../../hooks/useLibrary';
 import { useStory } from '../../hooks/useStory';
 import { useStoryProgress } from '../../hooks/useStoryProgress';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { toggleFavoriteStory } from '../../store/slices/librarySlice';
 import { theme } from '../../theme';
 
 export function StoryDetailsScreen({ route, navigation }: any) {
   const { storyId } = route.params;
   const insets = useSafeAreaInsets();
-  const dispatch = useAppDispatch();
   const { story, loading, error } = useStory(storyId);
   const {
     keys,
@@ -40,12 +38,14 @@ export function StoryDetailsScreen({ route, navigation }: any) {
   const [isNoKeysModalVisible, setIsNoKeysModalVisible] = useState(false);
 
   const { getStoryProgress } = useStoryProgress();
-  const favoriteStoryIds = useAppSelector(
-    state => state.library.favoriteStoryIds,
-  );
+  const {
+    isFavoriteStory,
+    toggleFavorite,
+    loading: libraryLoading,
+  } = useLibrary();
 
   const progress = getStoryProgress(storyId);
-  const isFavorite = favoriteStoryIds.includes(storyId);
+  const isFavorite = isFavoriteStory(storyId);
 
   if (loading) {
     return (
@@ -138,7 +138,8 @@ export function StoryDetailsScreen({ route, navigation }: any) {
             <View style={styles.topRightActions}>
               <Pressable
                 style={styles.iconButton}
-                onPress={() => dispatch(toggleFavoriteStory(storyId))}
+                onPress={() => toggleFavorite(storyId)}
+                disabled={libraryLoading}
               >
                 <Heart
                   size={20}

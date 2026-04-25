@@ -31,6 +31,7 @@ import {
   setReduceMotionPreference,
 } from '../../store/slices/profileSlice';
 import { clearUser } from '../../store/slices/userSlice';
+import { useLibrary } from '../../hooks/useLibrary';
 
 export function ProfileScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
@@ -40,9 +41,7 @@ export function ProfileScreen({ navigation }: any) {
   const progressByStory = useAppSelector(
     state => state.storyProgress.progressByStory,
   );
-  const favoriteStoryIds = useAppSelector(
-    state => state.library.favoriteStoryIds,
-  );
+  const { favoriteStoryIds } = useLibrary();
   const preferences = useAppSelector(state => state.profile.preferences);
 
   const storiesInProgress = Object.keys(progressByStory).length;

@@ -14,7 +14,6 @@ export function RootNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName={isAuthenticated ? 'App' : 'Auth'}
         screenOptions={{
           headerShown: false,
         }}

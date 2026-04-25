@@ -1,10 +1,10 @@
-import { Text, View, StyleSheet, Image } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
-import { AppButton } from '../../components/ui/AppButton';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
+import { GradientButton } from '../../components/ui/GradientButton';
+import { theme } from '../../theme';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
-import { theme } from '../../theme';
 
 export function ProfileScreen() {
   const dispatch = useAppDispatch();
@@ -17,13 +17,17 @@ export function ProfileScreen() {
   return (
     <ScreenContainer>
       <View style={styles.content}>
-        {user.avatar ? <Image source={{ uri: user.avatar }} style={styles.avatar} /> : null}
+        {user.avatar ? (
+          <Image source={{ uri: user.avatar }} style={styles.avatar} />
+        ) : null}
 
         <Text style={styles.title}>Perfil</Text>
         <Text style={styles.name}>{user.name}</Text>
         <Text style={styles.diamonds}>💎 {user.diamonds} diamantes</Text>
 
-        <AppButton title="Sair da conta" onPress={handleLogout} />
+        <View style={styles.buttonWrapper}>
+          <GradientButton title="Sair da conta" onPress={handleLogout} />
+        </View>
       </View>
     </ScreenContainer>
   );
@@ -32,30 +36,34 @@ export function ProfileScreen() {
 const styles = StyleSheet.create({
   content: {
     flex: 1,
-    padding: theme.spacing.xl,
-    justifyContent: 'center',
+    padding: theme.spacing.xxl,
     alignItems: 'center',
-    gap: theme.spacing.sm,
+    justifyContent: 'center',
   },
   avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    marginBottom: theme.spacing.sm,
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    marginBottom: theme.spacing.lg,
   },
   title: {
     color: theme.colors.text,
     fontSize: theme.typography.title,
-    fontWeight: '700',
+    fontWeight: '800',
+    marginBottom: theme.spacing.sm,
   },
   name: {
     color: theme.colors.text,
-    fontSize: theme.typography.subtitle,
-    fontWeight: '600',
+    fontSize: theme.typography.body,
+    fontWeight: '800',
+    marginBottom: theme.spacing.sm,
   },
   diamonds: {
     color: theme.colors.textSecondary,
     fontSize: theme.typography.body,
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.xxl,
+  },
+  buttonWrapper: {
+    width: 160,
   },
 });

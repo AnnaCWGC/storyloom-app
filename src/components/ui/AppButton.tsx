@@ -1,5 +1,12 @@
 import { ReactNode } from 'react';
-import { Pressable, PressableProps, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  PressableProps,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../../theme';
 
@@ -7,6 +14,7 @@ type AppButtonProps = PressableProps & {
   title: string;
   variant?: 'primary' | 'secondary' | 'ghost';
   icon?: ReactNode;
+  style?: ViewStyle;
 };
 
 export function AppButton({

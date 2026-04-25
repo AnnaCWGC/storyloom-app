@@ -30,9 +30,11 @@ export function StoryReaderScreen({ route }: any) {
     );
   }
 
+  const scene = currentScene;
+
   function goToNextScene() {
-    if (currentScene?.nextSceneId) {
-      setCurrentSceneId(currentScene.nextSceneId);
+    if (scene.nextSceneId) {
+      setCurrentSceneId(scene.nextSceneId);
     }
   }
 
@@ -41,7 +43,7 @@ export function StoryReaderScreen({ route }: any) {
       registerChoice({
         storyId,
         chapterId,
-        sceneId: currentScene.id,
+        sceneId: scene.id,
         choiceId: choice.id,
         relationshipTarget: choice.effect?.target,
         relationshipValue: choice.effect?.value,
@@ -66,11 +68,11 @@ export function StoryReaderScreen({ route }: any) {
         <Text style={styles.chapterTitle}>{chapter.title}</Text>
 
         <View style={styles.dialogueBox}>
-          {currentScene.speaker ? <Text style={styles.speaker}>{currentScene.speaker}</Text> : null}
+          {scene.speaker ? <Text style={styles.speaker}>{scene.speaker}</Text> : null}
 
-          <Text style={styles.dialogueText}>{currentScene.text}</Text>
+          <Text style={styles.dialogueText}>{scene.text}</Text>
 
-          {currentScene.choices?.map(choice => (
+          {scene.choices?.map(choice => (
             <Pressable
               key={choice.id}
               style={[styles.choiceButton, choice.isPremium && styles.premiumChoice]}
@@ -83,13 +85,13 @@ export function StoryReaderScreen({ route }: any) {
             </Pressable>
           ))}
 
-          {!currentScene.choices?.length && currentScene.nextSceneId ? (
+          {!scene.choices?.length && scene.nextSceneId ? (
             <Pressable style={styles.nextButton} onPress={goToNextScene}>
               <Text style={styles.nextText}>Continuar</Text>
             </Pressable>
           ) : null}
 
-          {!currentScene.choices?.length && !currentScene.nextSceneId ? (
+          {!scene.choices?.length && !scene.nextSceneId ? (
             <Text style={styles.endText}>Fim do capítulo</Text>
           ) : null}
         </View>

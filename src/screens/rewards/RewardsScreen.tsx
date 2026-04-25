@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BookOpen, Clapperboard, Gift, Share2 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,15 +10,22 @@ import { RewardBalanceCard } from '../../components/rewards/RewardBalanceCard';
 import { DailyRewardCard } from '../../components/rewards/DailyRewardCard';
 import { DiamondPackCard } from '../../components/rewards/DiamondPackCard';
 import { RewardActionCard } from '../../components/rewards/RewardActionCard';
+import { VipSubscriptionCard } from '../../components/rewards/VipSubscriptionCard';
+import { VIPPaywallModal } from '../../components/rewards/VIPPaywallModal';
 import { theme } from '../../theme';
 import { useRewards } from '../../hooks/useRewards';
 
 export function RewardsScreen() {
   const insets = useSafeAreaInsets();
+  const [isVipPaywallVisible, setIsVipPaywallVisible] = useState(false);
 
   const {
     diamonds,
     keys,
+    isVip,
+    maxKeys,
+    nextKeyAt,
+    dailyRewardAmount,
     dailyClaimed,
     lastRewardMessage,
     diamondPacks,
@@ -27,6 +35,9 @@ export function RewardsScreen() {
     claimDailyReward,
     claimActionReward,
     claimDiamondPack,
+    startVipTrial,
+    expiresAt,
+    willRenew,
   } = useRewards();
 
   if (loading) {
@@ -61,7 +72,7 @@ export function RewardsScreen() {
           styles.content,
           {
             paddingTop: insets.top + 12,
-            paddingBottom: insets.bottom + 140,
+            paddingBottom: insets.bottom + 170,
           },
         ]}
         showsVerticalScrollIndicator={false}
@@ -72,7 +83,18 @@ export function RewardsScreen() {
           Collect diamonds, unlock premium choices and keep your stories moving.
         </Text>
 
-        <RewardBalanceCard diamonds={diamonds} keys={keys} />
+        <RewardBalanceCard
+          diamonds={diamonds}
+          keys={keys}
+          isVip={isVip}
+          maxKeys={maxKeys}
+          nextKeyAt={nextKeyAt}
+        />
+
+        <VipSubscriptionCard
+          isVip={isVip}
+          onPress={() => setIsVipPaywallVisible(true)}
+        />
 
         {lastRewardMessage ? (
           <View style={styles.messagePill}>
@@ -81,7 +103,7 @@ export function RewardsScreen() {
         ) : null}
 
         <DailyRewardCard
-          amount={20}
+          amount={dailyRewardAmount}
           alreadyClaimed={dailyClaimed}
           onClaim={claimDailyReward}
         />
@@ -140,6 +162,21 @@ export function RewardsScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <VIPPaywallModal
+        visible={isVipPaywallVisible}
+        isVip={isVip}
+        expiresAt={expiresAt}
+        willRenew={willRenew}
+        onClose={() => setIsVipPaywallVisible(false)}
+        onStartVip={async () => {
+          if (!isVip) {
+            await startVipTrial();
+          }
+
+          setIsVipPaywallVisible(false);
+        }}
+      />
     </ScreenContainer>
   );
 }

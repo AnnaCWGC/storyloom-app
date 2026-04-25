@@ -52,6 +52,7 @@ export function ExploreScreen({ navigation }: any) {
           styles.content,
           {
             paddingTop: insets.top + 12,
+            paddingBottom: insets.bottom + 170,
           },
         ]}
         showsVerticalScrollIndicator={false}
@@ -134,7 +135,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: theme.spacing.xxl,
-    paddingBottom: 120,
   },
   title: {
     color: theme.colors.text,

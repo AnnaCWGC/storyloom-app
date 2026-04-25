@@ -94,18 +94,23 @@ export const rewardsService = {
     return apiClient<RewardActionDTO[]>('/rewards/actions');
   },
 
-  async claimDailyReward(): Promise<RewardClaimResponse> {
+  async claimDailyReward(params: {
+    isVip: boolean;
+  }): Promise<RewardClaimResponse> {
     if (env.USE_MOCKS) {
       await delay(180);
 
+      const amount = params.isVip ? 30 : 12;
+
       return {
-        amount: 20,
-        message: 'Daily reward collected: +20 diamonds',
+        amount,
+        message: `Daily reward collected: +${amount} diamonds`,
       };
     }
 
     return apiClient<RewardClaimResponse>('/rewards/daily', {
       method: 'POST',
+      body: params,
     });
   },
 

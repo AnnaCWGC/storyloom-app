@@ -111,7 +111,8 @@ export function HomeScreen({ navigation }: any) {
         contentContainerStyle={[
           styles.content,
           {
-            paddingTop: insets.top + 8,
+            paddingTop: insets.top + 12,
+            paddingBottom: insets.bottom + 170,
           },
         ]}
         showsVerticalScrollIndicator={false}
@@ -120,6 +121,7 @@ export function HomeScreen({ navigation }: any) {
           name={user?.name ?? 'Reader'}
           diamonds={user?.diamonds ?? 0}
           keys={user?.keys ?? 0}
+          isVip={user?.isVip ?? false}
           avatar={user?.avatar}
         />
 
@@ -187,7 +189,6 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: theme.spacing.xxl,
-    paddingBottom: 120,
   },
   horizontalList: {
     paddingRight: theme.spacing.xxl,

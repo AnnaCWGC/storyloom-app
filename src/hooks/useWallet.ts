@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   walletService,
@@ -6,6 +6,7 @@ import {
   WalletTransactionDTO,
 } from '../services/walletService';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { setKeysRechargeStartedAt } from '../store/slices/keysRechargeSlice';
 import {
   addDiamonds as addDiamondsAction,
   addKeys as addKeysAction,
@@ -13,13 +14,84 @@ import {
   spendKeys as spendKeysAction,
 } from '../store/slices/userSlice';
 
+const MAX_KEYS = 3;
+const KEY_RECHARGE_MS = 8 * 60 * 60 * 1000;
+
 export function useWallet() {
   const dispatch = useAppDispatch();
 
   const diamonds = useAppSelector(state => state.user?.diamonds ?? 0);
   const keys = useAppSelector(state => state.user?.keys ?? 0);
+  const isVip = useAppSelector(state => state.user?.isVip ?? false);
+  const rechargeStartedAt = useAppSelector(
+    state => state.keysRecharge.rechargeStartedAt,
+  );
 
   const [loading, setLoading] = useState(false);
+  const [rechargeTick, setRechargeTick] = useState(Date.now());
+
+  const nextKeyAt = useMemo(() => {
+    if (!rechargeStartedAt || keys >= MAX_KEYS || isVip) {
+      return null;
+    }
+
+    return new Date(
+      new Date(rechargeStartedAt).getTime() + KEY_RECHARGE_MS,
+    ).toISOString();
+  }, [isVip, keys, rechargeStartedAt]);
+
+  useEffect(() => {
+    if (!rechargeStartedAt || keys >= MAX_KEYS || isVip) return;
+
+    const interval = setInterval(() => {
+      setRechargeTick(Date.now());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isVip, keys, rechargeStartedAt]);
+
+  useEffect(() => {
+    void rechargeTick;
+
+    if (isVip) {
+      dispatch(setKeysRechargeStartedAt(null));
+      return;
+    }
+
+    if (keys >= MAX_KEYS) {
+      dispatch(setKeysRechargeStartedAt(null));
+      return;
+    }
+
+    if (!rechargeStartedAt) {
+      dispatch(setKeysRechargeStartedAt(new Date().toISOString()));
+      return;
+    }
+
+    const startedAtMs = new Date(rechargeStartedAt).getTime();
+    const nowMs = Date.now();
+    const elapsed = nowMs - startedAtMs;
+
+    if (elapsed < KEY_RECHARGE_MS) return;
+
+    const keysToRecover = Math.floor(elapsed / KEY_RECHARGE_MS);
+    const nextKeyCount = Math.min(MAX_KEYS, keys + keysToRecover);
+    const recoveredKeys = nextKeyCount - keys;
+
+    if (recoveredKeys <= 0) return;
+
+    dispatch(addKeysAction(recoveredKeys));
+
+    if (nextKeyCount >= MAX_KEYS) {
+      dispatch(setKeysRechargeStartedAt(null));
+      return;
+    }
+
+    const remainderMs = elapsed % KEY_RECHARGE_MS;
+    const newStartedAt = new Date(Date.now() - remainderMs).toISOString();
+
+    dispatch(setKeysRechargeStartedAt(newStartedAt));
+  }, [dispatch, isVip, keys, rechargeStartedAt, rechargeTick]);
 
   const getBalanceByCurrency = useCallback(
     (currency: WalletCurrency) => {
@@ -30,9 +102,13 @@ export function useWallet() {
 
   const canSpendCurrency = useCallback(
     (currency: WalletCurrency, amount: number) => {
+      if (isVip && currency === 'keys') {
+        return true;
+      }
+
       return getBalanceByCurrency(currency) >= amount;
     },
-    [getBalanceByCurrency],
+    [getBalanceByCurrency, isVip],
   );
 
   const addCurrency = useCallback(
@@ -58,6 +134,10 @@ export function useWallet() {
 
   const spendCurrency = useCallback(
     async (payload: WalletTransactionDTO) => {
+      if (isVip && payload.currency === 'keys') {
+        return payload;
+      }
+
       if (!canSpendCurrency(payload.currency, payload.amount)) {
         throw new Error(
           payload.currency === 'diamonds'
@@ -82,7 +162,7 @@ export function useWallet() {
         setLoading(false);
       }
     },
-    [canSpendCurrency, dispatch],
+    [canSpendCurrency, dispatch, isVip],
   );
 
   const addDiamonds = useCallback(
@@ -152,6 +232,9 @@ export function useWallet() {
   return {
     diamonds,
     keys,
+    isVip,
+    maxKeys: MAX_KEYS,
+    nextKeyAt,
     loading,
 
     getBalanceByCurrency,

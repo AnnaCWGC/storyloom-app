@@ -10,11 +10,28 @@ import {
   registerReward,
   setDailyClaimed,
 } from '../store/slices/rewardsSlice';
+import { useVip } from './useVip';
 import { useWallet } from './useWallet';
 
 export function useRewards() {
   const dispatch = useAppDispatch();
-  const { diamonds, keys, addDiamonds } = useWallet();
+  const {
+    diamonds,
+    keys,
+    maxKeys,
+    nextKeyAt,
+    addDiamonds,
+  } = useWallet();
+  const {
+    isVip,
+    loading: vipLoading,
+    toggleVipMock,
+    startVipTrial,
+    cancelVip,
+    plan,
+    expiresAt,
+    willRenew,
+  } = useVip();
 
   const dailyClaimed = useAppSelector(state => state.rewards.dailyClaimed);
   const lastRewardMessage = useAppSelector(
@@ -66,14 +83,14 @@ export function useRewards() {
     try {
       setClaiming(true);
 
-      const response = await rewardsService.claimDailyReward();
+      const response = await rewardsService.claimDailyReward({ isVip });
 
       await applyReward(response.amount, response.message);
       dispatch(setDailyClaimed(true));
     } finally {
       setClaiming(false);
     }
-  }, [applyReward, claiming, dailyClaimed, dispatch]);
+  }, [applyReward, claiming, dailyClaimed, dispatch, isVip]);
 
   const claimActionReward = useCallback(
     async (actionId: string) => {
@@ -112,6 +129,14 @@ export function useRewards() {
   return {
     diamonds,
     keys,
+    isVip,
+    maxKeys,
+    nextKeyAt,
+    plan,
+    expiresAt,
+    willRenew,
+    vipLoading,
+    dailyRewardAmount: isVip ? 30 : 12,
     dailyClaimed,
     lastRewardMessage,
     history,
@@ -124,5 +149,8 @@ export function useRewards() {
     claimDailyReward,
     claimActionReward,
     claimDiamondPack,
+    toggleVipMock,
+    startVipTrial,
+    cancelVip,
   };
 }

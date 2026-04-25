@@ -6,15 +6,19 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, BookOpen, Heart, Play, Sparkles, Star } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ChapterListItem } from '../../components/story-details/ChapterListItem';
+import { ChapterAccessCard } from '../../components/story-details/ChapterAccessCard';
 import { InfoPill } from '../../components/story-details/InfoPill';
+import { NoKeysModal } from '../../components/story-details/NoKeysModal';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { GradientButton } from '../../components/ui/GradientButton';
 import { LoadingState } from '../../components/ui/LoadingState';
+import { useChapterEntry } from '../../hooks/useChapterEntry';
 import { useStory } from '../../hooks/useStory';
 import { useStoryProgress } from '../../hooks/useStoryProgress';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -26,6 +30,14 @@ export function StoryDetailsScreen({ route, navigation }: any) {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
   const { story, loading, error } = useStory(storyId);
+  const {
+    keys,
+    isVip,
+    nextKeyAt,
+    loading: chapterEntryLoading,
+    startChapter,
+  } = useChapterEntry();
+  const [isNoKeysModalVisible, setIsNoKeysModalVisible] = useState(false);
 
   const { getStoryProgress } = useStoryProgress();
   const favoriteStoryIds = useAppSelector(
@@ -64,22 +76,34 @@ export function StoryDetailsScreen({ route, navigation }: any) {
   const hasProgress = Boolean(progress);
   const canStartStory = Boolean(firstChapter || hasProgress);
 
-  function handleStartOrContinue() {
-    if (hasProgress) {
-      navigation.navigate('StoryReader', {
-        storyId: selectedStory.id,
-        chapterId: progress!.chapterId,
-      });
+  async function handleOpenChapter(targetChapterId: string) {
+    if (chapterEntryLoading) return;
 
+    const result = await startChapter({
+      storyId: selectedStory.id,
+      chapterId: targetChapterId,
+    });
+
+    if (!result.allowed) {
+      setIsNoKeysModalVisible(true);
+      return;
+    }
+
+    navigation.navigate('StoryReader', {
+      storyId: selectedStory.id,
+      chapterId: targetChapterId,
+    });
+  }
+
+  async function handleStartOrContinue() {
+    if (hasProgress) {
+      await handleOpenChapter(progress!.chapterId);
       return;
     }
 
     if (!firstChapter) return;
 
-    navigation.navigate('StoryReader', {
-      storyId: selectedStory.id,
-      chapterId: firstChapter.id,
-    });
+    await handleOpenChapter(firstChapter.id);
   }
 
   return (
@@ -184,7 +208,13 @@ export function StoryDetailsScreen({ route, navigation }: any) {
 
           {canStartStory ? (
             <GradientButton
-              title={hasProgress ? 'Continue story' : 'Start story'}
+              title={
+                chapterEntryLoading
+                  ? 'Opening...'
+                  : hasProgress
+                    ? 'Continue story'
+                    : 'Start story'
+              }
               icon={
                 <Play
                   size={18}
@@ -193,6 +223,7 @@ export function StoryDetailsScreen({ route, navigation }: any) {
                 />
               }
               onPress={handleStartOrContinue}
+              disabled={chapterEntryLoading}
               style={styles.mainButton}
             />
           ) : (
@@ -200,6 +231,13 @@ export function StoryDetailsScreen({ route, navigation }: any) {
               <Text style={styles.disabledButtonText}>Coming soon</Text>
             </View>
           )}
+
+          <ChapterAccessCard
+            keys={keys}
+            maxKeys={3}
+            isVip={isVip}
+            nextKeyAt={nextKeyAt}
+          />
 
           <View style={styles.chaptersSection}>
             <View style={styles.sectionHeader}>
@@ -215,12 +253,10 @@ export function StoryDetailsScreen({ route, navigation }: any) {
                   key={chapter.id}
                   index={index}
                   title={chapter.title}
-                  onPress={() =>
-                    navigation.navigate('StoryReader', {
-                      storyId: story.id,
-                      chapterId: chapter.id,
-                    })
-                  }
+                  accessLabel={isVip ? 'VIP' : '1 KEY'}
+                  accessType={isVip ? 'vip' : 'key'}
+                  isLoading={chapterEntryLoading}
+                  onPress={() => handleOpenChapter(chapter.id)}
                 />
               ))
             ) : (
@@ -234,6 +270,18 @@ export function StoryDetailsScreen({ route, navigation }: any) {
           </View>
         </View>
       </ScrollView>
+
+      <NoKeysModal
+        visible={isNoKeysModalVisible}
+        nextKeyAt={nextKeyAt}
+        onClose={() => setIsNoKeysModalVisible(false)}
+        onGoToRewards={() => {
+          setIsNoKeysModalVisible(false);
+          navigation.getParent()?.navigate('App', {
+            screen: 'Rewards',
+          });
+        }}
+      />
     </View>
   );
 }

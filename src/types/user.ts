@@ -4,6 +4,7 @@ export type AppUser = {
   email: string;
   diamonds: number;
   keys: number;
+  isVip: boolean;
   avatar?: string;
 };
 

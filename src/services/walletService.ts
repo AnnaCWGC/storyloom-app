@@ -14,11 +14,12 @@ export type WalletTransactionDTO = {
   reason:
     | 'reward'
     | 'premium_choice'
-    | 'chapter_unlock'
+    | 'chapter_entry'
     | 'purchase'
     | 'admin_adjustment'
     | 'chapter_completion'
-    | 'daily_bonus';
+    | 'daily_bonus'
+    | 'key_recharge';
   referenceId?: string;
 };
 

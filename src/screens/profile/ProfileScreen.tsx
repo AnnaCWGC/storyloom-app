@@ -4,6 +4,7 @@ import {
   BookOpen,
   Gem,
   Heart,
+  Infinity,
   Key,
   Library,
   LogOut,
@@ -76,7 +77,7 @@ export function ProfileScreen({ navigation }: any) {
           styles.content,
           {
             paddingTop: insets.top + 12,
-            paddingBottom: insets.bottom + 220,
+            paddingBottom: insets.bottom + 170,
           },
         ]}
         scrollIndicatorInsets={{ bottom: insets.bottom + 120 }}
@@ -107,26 +108,48 @@ export function ProfileScreen({ navigation }: any) {
             </View>
           </View>
 
-          <View style={styles.walletRow}>
-            <View style={styles.walletItem}>
-              <View style={styles.walletIcon}>
-                <Gem size={20} color={theme.colors.white} fill={theme.colors.secondary} />
-              </View>
-
+          <View style={styles.profileWalletRow}>
+            <View style={styles.profileWalletItem}>
+              <Gem
+                size={18}
+                color={theme.colors.secondary}
+                fill={theme.colors.secondary}
+              />
               <View>
-                <Text style={styles.walletValue}>{user.diamonds}</Text>
-                <Text style={styles.walletLabel}>diamonds available</Text>
+                <Text style={styles.profileWalletValue}>{user.diamonds}</Text>
+                <Text style={styles.profileWalletLabel}>diamonds</Text>
               </View>
             </View>
 
-            <View style={styles.walletItem}>
-              <View style={styles.walletIcon}>
-                <Key size={20} color={theme.colors.white} />
-              </View>
+            <View
+              style={[
+                styles.profileWalletItem,
+                user.isVip && styles.profileVipWalletItem,
+              ]}
+            >
+              {user.isVip ? (
+                <Infinity size={18} color="#FBBF24" />
+              ) : (
+                <Key size={18} color={theme.colors.secondary} />
+              )}
 
               <View>
-                <Text style={styles.walletValue}>{user.keys ?? 0}</Text>
-                <Text style={styles.walletLabel}>keys available</Text>
+                <Text
+                  style={[
+                    styles.profileWalletValue,
+                    user.isVip && styles.profileVipValue,
+                  ]}
+                >
+                  {user.isVip ? '∞' : user.keys}
+                </Text>
+                <Text
+                  style={[
+                    styles.profileWalletLabel,
+                    user.isVip && styles.profileVipLabel,
+                  ]}
+                >
+                  {user.isVip ? 'VIP keys' : 'keys'}
+                </Text>
               </View>
             </View>
           </View>
@@ -167,7 +190,7 @@ export function ProfileScreen({ navigation }: any) {
             icon={<Gem size={20} color={theme.colors.secondary} />}
             title="Rewards"
             description="Collect diamonds, keys and daily bonuses."
-            rightText={`${user.diamonds} / ${user.keys ?? 0}`}
+            rightText={`${user.diamonds} / ${user.isVip ? 'VIP' : user.keys}`}
             onPress={() => goToTab('Rewards')}
           />
 
@@ -301,7 +324,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  walletRow: {
+  profileWalletRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+  },
+  profileWalletItem: {
+    flex: 1,
     minHeight: 72,
     borderRadius: theme.radius.xl,
     backgroundColor: 'rgba(15,13,22,0.32)',
@@ -310,31 +338,27 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.lg,
+    gap: theme.spacing.md,
   },
-  walletItem: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+  profileVipWalletItem: {
+    backgroundColor: 'rgba(251,191,36,0.12)',
+    borderColor: 'rgba(251,191,36,0.42)',
   },
-  walletIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: 'rgba(244,114,182,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: theme.spacing.md,
-  },
-  walletValue: {
+  profileWalletValue: {
     color: theme.colors.text,
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '900',
   },
-  walletLabel: {
+  profileWalletLabel: {
     color: theme.colors.textSecondary,
     fontSize: theme.typography.tiny,
     fontWeight: '700',
+  },
+  profileVipValue: {
+    color: '#FBBF24',
+  },
+  profileVipLabel: {
+    color: '#FBBF24',
   },
   statsRow: {
     flexDirection: 'row',

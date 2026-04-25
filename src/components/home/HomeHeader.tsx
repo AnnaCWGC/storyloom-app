@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { Gem, Key } from 'lucide-react-native';
+import { Crown, Gem, Infinity, Key } from 'lucide-react-native';
 
 import { theme } from '../../theme';
 
@@ -7,10 +7,17 @@ type HomeHeaderProps = {
   name: string;
   diamonds: number;
   keys: number;
+  isVip: boolean;
   avatar?: string;
 };
 
-export function HomeHeader({ name, diamonds, keys, avatar }: HomeHeaderProps) {
+export function HomeHeader({
+  name,
+  diamonds,
+  keys,
+  isVip,
+  avatar,
+}: HomeHeaderProps) {
   return (
     <View style={styles.container}>
       <View style={styles.leftContent}>
@@ -34,9 +41,19 @@ export function HomeHeader({ name, diamonds, keys, avatar }: HomeHeaderProps) {
           <Text style={styles.walletText}>{diamonds}</Text>
         </View>
 
-        <View style={styles.walletPill}>
-          <Key size={16} color={theme.colors.secondary} />
-          <Text style={styles.walletText}>{keys}</Text>
+        <View style={[styles.walletPill, isVip && styles.vipKeyPill]}>
+          {isVip ? (
+            <>
+              <Infinity size={17} color="#FBBF24" />
+              <Text style={styles.vipKeyText}>VIP</Text>
+              <Crown size={13} color="#FBBF24" fill="#FBBF24" />
+            </>
+          ) : (
+            <>
+              <Key size={16} color={theme.colors.secondary} />
+              <Text style={styles.walletText}>{keys}</Text>
+            </>
+          )}
         </View>
       </View>
     </View>
@@ -114,5 +131,23 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.typography.small,
     fontWeight: '800',
+  },
+  vipKeyPill: {
+    backgroundColor: 'rgba(251,191,36,0.14)',
+    borderColor: 'rgba(251,191,36,0.55)',
+    shadowColor: '#FBBF24',
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    elevation: 5,
+  },
+  vipKeyText: {
+    color: '#FBBF24',
+    fontSize: theme.typography.tiny,
+    fontWeight: '900',
+    letterSpacing: 0.6,
   },
 });

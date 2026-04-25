@@ -1,41 +1,60 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ChevronRight, Lock } from 'lucide-react-native';
+import { ChevronRight, Crown, Key } from 'lucide-react-native';
 
 import { theme } from '../../theme';
 
 type ChapterListItemProps = {
   index: number;
   title: string;
-  isLocked?: boolean;
+  accessLabel: string;
+  accessType: 'vip' | 'key';
+  isLoading?: boolean;
   onPress?: () => void;
 };
 
 export function ChapterListItem({
   index,
   title,
-  isLocked = false,
+  accessLabel,
+  accessType,
+  isLoading = false,
   onPress,
 }: ChapterListItemProps) {
+  const isVip = accessType === 'vip';
+
   return (
     <Pressable
-      style={[styles.container, isLocked && styles.lockedContainer]}
+      style={[styles.container, isLoading && styles.loadingContainer]}
       onPress={onPress}
-      disabled={isLocked}
+      disabled={isLoading}
     >
       <View style={styles.numberBadge}>
         <Text style={styles.number}>{index + 1}</Text>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.label}>Chapter {index + 1}</Text>
+        <View style={styles.labelRow}>
+          <Text style={styles.label}>Chapter {index + 1}</Text>
+
+          <View style={[styles.accessBadge, isVip && styles.vipBadge]}>
+            {isVip ? (
+              <Crown size={10} color={theme.colors.secondary} />
+            ) : (
+              <Key size={10} color={theme.colors.secondary} />
+            )}
+
+            <Text style={styles.accessText}>{accessLabel}</Text>
+          </View>
+        </View>
+
         <Text style={styles.title}>{title}</Text>
       </View>
 
-      {isLocked ? (
-        <Lock size={18} color={theme.colors.textMuted} />
-      ) : (
+      <Text style={styles.rightText}>{isLoading ? '...' : ''}</Text>
+
+      {!isLoading ? (
         <ChevronRight size={20} color={theme.colors.secondary} />
-      )}
+      ) : null}
     </Pressable>
   );
 }
@@ -52,8 +71,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: theme.spacing.md,
   },
-  lockedContainer: {
-    opacity: 0.56,
+  loadingContainer: {
+    opacity: 0.64,
   },
   numberBadge: {
     width: 40,
@@ -74,15 +93,45 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    marginBottom: 2,
+  },
   label: {
     color: theme.colors.textMuted,
     fontSize: theme.typography.tiny,
     fontWeight: '700',
-    marginBottom: 2,
+  },
+  accessBadge: {
+    height: 22,
+    borderRadius: 11,
+    paddingHorizontal: theme.spacing.sm,
+    backgroundColor: 'rgba(244,114,182,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(244,114,182,0.30)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  vipBadge: {
+    backgroundColor: 'rgba(251,191,36,0.12)',
+    borderColor: 'rgba(251,191,36,0.30)',
+  },
+  accessText: {
+    color: theme.colors.secondary,
+    fontSize: 10,
+    fontWeight: '900',
   },
   title: {
     color: theme.colors.text,
     fontSize: theme.typography.body,
     fontWeight: '800',
+  },
+  rightText: {
+    color: theme.colors.textMuted,
+    fontSize: theme.typography.small,
+    fontWeight: '900',
   },
 });

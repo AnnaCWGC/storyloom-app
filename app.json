@@ -8,6 +8,9 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "android": {
+      "package": "com.storyloom.app"
+    },
     "plugins": [
       "expo-asset"
     ]

@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from 'react';
 import {
   ImageBackground,
   StyleSheet,
@@ -9,70 +8,44 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { ReaderTopBar } from '../../components/reader/ReaderTopBar';
 import { DialogueBox } from '../../components/reader/DialogueBox';
-import { ErrorState } from '../../components/ui/ErrorState';
 import { LoadingState } from '../../components/ui/LoadingState';
-import { useStory } from '../../hooks/useStory';
-import { useStoryProgress } from '../../hooks/useStoryProgress';
-import { useWallet } from '../../hooks/useWallet';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { useStoryReader } from '../../hooks/useStoryReader';
 import { theme } from '../../theme';
-import { StoryChoice } from '../../types/story';
 
 export function StoryReaderScreen({ route, navigation }: any) {
   const { storyId, chapterId } = route.params;
 
-  const { story, loading, error } = useStory(storyId);
   const {
+    story,
+    chapter,
+    currentScene,
+
+    loading,
+    error,
+
     diamonds,
-    canSpendCurrency,
-    spendDiamonds,
-  } = useWallet();
-  const {
-    getStoryProgress,
-    saveStoryProgress,
-    registerStoryChoice,
-  } = useStoryProgress();
-  const savedProgress = getStoryProgress(storyId);
+    currentProgress,
+    feedbackMessage,
 
-  const chapter = useMemo(() => {
-    return story?.chapters.find(item => item.id === chapterId);
-  }, [story, chapterId]);
+    canContinue,
+    isEnd,
 
-  const [currentSceneId, setCurrentSceneId] = useState<string | undefined>();
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+    handleChoicePress,
+    handleContinue,
+    finishChapter,
+  } = useStoryReader({
+    storyId,
+    chapterId,
+  });
 
-  useEffect(() => {
-    if (!chapter) return;
+  function handleBack() {
+    navigation.goBack();
+  }
 
-    const initialSceneId =
-      savedProgress?.chapterId === chapterId
-        ? savedProgress.sceneId
-        : chapter.scenes[0]?.id;
-
-    setCurrentSceneId(initialSceneId);
-  }, [chapter, chapterId, savedProgress?.chapterId, savedProgress?.sceneId]);
-
-  const currentScene = useMemo(() => {
-    return chapter?.scenes.find(scene => scene.id === currentSceneId);
-  }, [chapter, currentSceneId]);
-
-  const currentSceneIndex = useMemo(() => {
-    return chapter?.scenes.findIndex(scene => scene.id === currentSceneId) ?? 0;
-  }, [chapter, currentSceneId]);
-
-  const currentProgress = useMemo(() => {
-    if (!chapter?.scenes.length) return 0;
-
-    return Math.min(1, (currentSceneIndex + 1) / chapter.scenes.length);
-  }, [chapter, currentSceneIndex]);
-
-  function getSceneProgress(sceneId: string) {
-    if (!chapter?.scenes.length) return 0;
-
-    const sceneIndex = chapter.scenes.findIndex(scene => scene.id === sceneId);
-
-    if (sceneIndex < 0) return currentProgress;
-
-    return Math.min(1, (sceneIndex + 1) / chapter.scenes.length);
+  async function handleEndChapter() {
+    await finishChapter();
+    navigation.navigate('App');
   }
 
   if (loading) {
@@ -99,87 +72,9 @@ export function StoryReaderScreen({ route, navigation }: any) {
     );
   }
 
-  const scene = currentScene;
-
-  async function persistProgress(nextSceneId: string) {
-    await saveStoryProgress({
-      storyId,
-      chapterId,
-      sceneId: nextSceneId,
-      progress: getSceneProgress(nextSceneId),
-    });
-  }
-
-  async function handleGoToScene(nextSceneId: string) {
-    await persistProgress(nextSceneId);
-    setCurrentSceneId(nextSceneId);
-  }
-
-  async function handleChoicePress(choice: StoryChoice) {
-    if (choice.isPremium) {
-      const cost = choice.cost ?? 0;
-
-      if (!canSpendCurrency('diamonds', cost)) {
-        setFeedbackMessage('Você não tem diamantes suficientes para essa escolha.');
-        return;
-      }
-
-      await spendDiamonds(cost, 'premium_choice', choice.id);
-    }
-
-    await registerStoryChoice({
-      storyId,
-      chapterId,
-      sceneId: scene.id,
-      choiceId: choice.id,
-      relationshipTarget: choice.effect?.target,
-      relationshipValue: choice.effect?.value,
-    });
-
-    if (choice.effect?.message) {
-      setFeedbackMessage(choice.effect.message);
-    } else {
-      setFeedbackMessage(null);
-    }
-
-    await handleGoToScene(choice.nextSceneId);
-  }
-
-  async function handleContinue() {
-    if (!scene.nextSceneId) return;
-
-    setFeedbackMessage(null);
-    await handleGoToScene(scene.nextSceneId);
-  }
-
-  function handleBack() {
-    navigation.goBack();
-  }
-
-  async function handleEndChapter() {
-    if (scene) {
-      await saveStoryProgress({
-        storyId,
-        chapterId,
-        sceneId: scene.id,
-        progress: 1,
-      });
-    }
-
-    navigation.navigate('App');
-  }
-
-  const canContinue = Boolean(
-    !scene.choices?.length && scene.nextSceneId,
-  );
-
-  const isEnd = Boolean(
-    !scene.choices?.length && !scene.nextSceneId,
-  );
-
   return (
     <ImageBackground
-      source={scene.backgroundImage || story.bannerImage}
+      source={currentScene.backgroundImage || story.bannerImage}
       style={styles.background}
       resizeMode="cover"
     >
@@ -209,9 +104,9 @@ export function StoryReaderScreen({ route, navigation }: any) {
         ) : null}
 
         <DialogueBox
-          speaker={scene.speaker}
-          text={scene.text}
-          choices={scene.choices}
+          speaker={currentScene.speaker}
+          text={currentScene.text}
+          choices={currentScene.choices}
           canContinue={canContinue}
           isEnd={isEnd}
           onChoicePress={handleChoicePress}

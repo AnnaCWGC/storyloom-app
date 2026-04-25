@@ -26,7 +26,7 @@ const rootReducer = combineReducers({
 });
 
 const persistConfig = {
-  key: 'root',
+  key: 'root-v2',
   storage: AsyncStorage,
   whitelist: ['auth', 'user', 'storyProgress', 'library', 'profile'],
 };

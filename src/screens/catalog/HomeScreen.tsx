@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ContinueReadingCard } from '../../components/home/ContinueReadingCard';
@@ -9,6 +9,8 @@ import { HomeHeader } from '../../components/home/HomeHeader';
 import { SearchBar } from '../../components/home/SearchBar';
 import { SectionHeader } from '../../components/home/SectionHeader';
 import { StoryCoverCard } from '../../components/home/StoryCoverCard';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { LoadingState } from '../../components/ui/LoadingState';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useStories } from '../../hooks/useStories';
 import { useAppSelector } from '../../store/hooks';
@@ -18,7 +20,7 @@ export function HomeScreen({ navigation }: any) {
   const [search, setSearch] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const insets = useSafeAreaInsets();
-  const { stories, loading } = useStories();
+  const { stories, loading, error } = useStories();
 
   const user = useAppSelector(state => state.user);
   const progressByStory = useAppSelector(
@@ -75,6 +77,34 @@ export function HomeScreen({ navigation }: any) {
     });
   }
 
+  if (loading) {
+    return (
+      <ScreenContainer>
+        <LoadingState message="Loading your stories..." />
+      </ScreenContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <ScreenContainer>
+        <View style={styles.stateWrapper}>
+          <ErrorState message={error} />
+        </View>
+      </ScreenContainer>
+    );
+  }
+
+  if (!featuredStory) {
+    return (
+      <ScreenContainer>
+        <View style={styles.stateWrapper}>
+          <ErrorState message="No stories available yet." />
+        </View>
+      </ScreenContainer>
+    );
+  }
+
   return (
     <ScreenContainer>
       <ScrollView
@@ -88,9 +118,9 @@ export function HomeScreen({ navigation }: any) {
         showsVerticalScrollIndicator={false}
       >
         <HomeHeader
-          name={user.name}
-          diamonds={user.diamonds}
-          avatar={user.avatar}
+          name={user?.name ?? 'Reader'}
+          diamonds={user?.diamonds ?? 0}
+          avatar={user?.avatar}
         />
 
         <SearchBar value={search} onChangeText={setSearch} />
@@ -100,33 +130,27 @@ export function HomeScreen({ navigation }: any) {
           onSelectGenre={setSelectedGenre}
         />
 
-        {loading || !featuredStory ? (
-          <Text style={styles.loadingText}>Loading stories...</Text>
-        ) : (
-          <>
-            <FeaturedStoryCard
-              story={featuredStory}
-              onPress={() => goToStoryDetails(featuredStory.id)}
+        <FeaturedStoryCard
+          story={featuredStory}
+          onPress={() => goToStoryDetails(featuredStory.id)}
+        />
+
+        <SectionHeader title="Popular now" />
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.horizontalList}
+          style={styles.popularScroll}
+        >
+          {popularStories.map(story => (
+            <StoryCoverCard
+              key={story.id}
+              story={story}
+              onPress={() => goToStoryDetails(story.id)}
             />
-
-            <SectionHeader title="Popular now" />
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.horizontalList}
-              style={styles.popularScroll}
-            >
-              {popularStories.map(story => (
-                <StoryCoverCard
-                  key={story.id}
-                  story={story}
-                  onPress={() => goToStoryDetails(story.id)}
-                />
-              ))}
-            </ScrollView>
-          </>
-        )}
+          ))}
+        </ScrollView>
 
         {continuedStories.length ? (
           <View style={styles.section}>
@@ -175,10 +199,9 @@ const styles = StyleSheet.create({
   section: {
     marginTop: theme.spacing.sm,
   },
-  loadingText: {
-    color: theme.colors.textSecondary,
-    fontSize: theme.typography.small,
-    fontWeight: '700',
-    marginBottom: theme.spacing.xxl,
+  stateWrapper: {
+    flex: 1,
+    padding: theme.spacing.xxl,
+    justifyContent: 'center',
   },
 });

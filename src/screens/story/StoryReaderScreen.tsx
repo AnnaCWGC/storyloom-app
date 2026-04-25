@@ -9,7 +9,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { ReaderTopBar } from '../../components/reader/ReaderTopBar';
 import { DialogueBox } from '../../components/reader/DialogueBox';
-import { useStories } from '../../hooks/useStories';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { LoadingState } from '../../components/ui/LoadingState';
+import { useStory } from '../../hooks/useStory';
 import { theme } from '../../theme';
 import { StoryChoice } from '../../types/story';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -23,27 +25,31 @@ export function StoryReaderScreen({ route, navigation }: any) {
   const { storyId, chapterId } = route.params;
 
   const dispatch = useAppDispatch();
-  const { findStoryById, loading } = useStories();
+  const { story, loading, error } = useStory(storyId);
 
   const user = useAppSelector(state => state.user);
+  const diamonds = user?.diamonds ?? 0;
   const savedProgress = useAppSelector(
     state => state.storyProgress.progressByStory[storyId],
   );
 
-  const story = findStoryById(storyId);
-  const chapter = story?.chapters.find(item => item.id === chapterId);
+  const chapter = useMemo(() => {
+    return story?.chapters.find(item => item.id === chapterId);
+  }, [story, chapterId]);
 
-  const initialSceneId =
-    savedProgress?.chapterId === chapterId
-      ? savedProgress.sceneId
-      : chapter?.scenes[0]?.id;
-
-  const [currentSceneId, setCurrentSceneId] = useState(initialSceneId);
+  const [currentSceneId, setCurrentSceneId] = useState<string | undefined>();
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!chapter) return;
+
+    const initialSceneId =
+      savedProgress?.chapterId === chapterId
+        ? savedProgress.sceneId
+        : chapter.scenes[0]?.id;
+
     setCurrentSceneId(initialSceneId);
-  }, [initialSceneId]);
+  }, [chapter, chapterId, savedProgress?.chapterId, savedProgress?.sceneId]);
 
   const currentScene = useMemo(() => {
     return chapter?.scenes.find(scene => scene.id === currentSceneId);
@@ -69,12 +75,26 @@ export function StoryReaderScreen({ route, navigation }: any) {
     return Math.min(1, (sceneIndex + 1) / chapter.scenes.length);
   }
 
+  if (loading) {
+    return (
+      <View style={styles.emptyContainer}>
+        <LoadingState message="Loading chapter..." />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.emptyContainer}>
+        <ErrorState message={error} />
+      </View>
+    );
+  }
+
   if (!story || !chapter || !currentScene) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>
-          {loading ? 'Loading scene...' : 'Cena não encontrada'}
-        </Text>
+        <ErrorState message="Chapter scene not found." />
       </View>
     );
   }
@@ -101,7 +121,7 @@ export function StoryReaderScreen({ route, navigation }: any) {
     if (choice.isPremium) {
       const cost = choice.cost ?? 0;
 
-      if (user.diamonds < cost) {
+      if (diamonds < cost) {
         setFeedbackMessage('Você não tem diamantes suficientes para essa escolha.');
         return;
       }
@@ -180,7 +200,7 @@ export function StoryReaderScreen({ route, navigation }: any) {
 
       <ReaderTopBar
         chapterTitle={chapter.title}
-        diamonds={user.diamonds}
+        diamonds={diamonds}
         progress={currentProgress}
         onBack={handleBack}
       />
@@ -241,13 +261,7 @@ const styles = StyleSheet.create({
   emptyContainer: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
     padding: theme.spacing.xxl,
-  },
-  emptyText: {
-    color: theme.colors.text,
-    fontSize: theme.typography.body,
-    fontWeight: '800',
+    justifyContent: 'center',
   },
 });

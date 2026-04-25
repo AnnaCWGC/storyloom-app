@@ -45,7 +45,7 @@ export function RewardsScreen() {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
-  const diamonds = useAppSelector(state => state.user.diamonds);
+  const diamonds = useAppSelector(state => state.user?.diamonds ?? 0);
 
   const [dailyClaimed, setDailyClaimed] = useState(false);
   const [lastRewardMessage, setLastRewardMessage] = useState<string | null>(

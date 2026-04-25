@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ImageBackground,
   Pressable,
@@ -14,14 +15,44 @@ import { SocialButton } from '../../components/ui/SocialButton';
 import { theme } from '../../theme';
 import { useAppDispatch } from '../../store/hooks';
 import { login } from '../../store/slices/authSlice';
+import { setUser } from '../../store/slices/userSlice';
+import { authService } from '../../services/authService';
 
 const HERO_IMAGE = require('../../assets/images/auth/login-hero.png');
 
 export function LoginScreen({ navigation }: any) {
   const dispatch = useAppDispatch();
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin() {
-    dispatch(login());
+  async function handleMockLogin(provider: 'email' | 'google' | 'apple') {
+    if (loading) return;
+
+    try {
+      setLoading(true);
+
+      const response =
+        provider === 'google'
+          ? await authService.loginWithGoogle()
+          : provider === 'apple'
+            ? await authService.loginWithApple()
+            : await authService.loginWithEmail({
+                email: 'anna@storyloom.app',
+                password: 'mock-password',
+              });
+
+      dispatch(
+        login({
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+        }),
+      );
+
+      dispatch(setUser(response.user));
+
+      navigation.replace('App');
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleRegister() {
@@ -66,13 +97,14 @@ export function LoginScreen({ navigation }: any) {
 
           <View style={styles.actions}>
             <SocialButton
-              title="Continue with Google"
+              title={loading ? 'Loading...' : 'Continue with Google'}
               icon={<Text style={styles.googleIcon}>G</Text>}
-              onPress={handleLogin}
+              disabled={loading}
+              onPress={() => handleMockLogin('google')}
             />
 
             <SocialButton
-              title="Continue with Apple"
+              title={loading ? 'Loading...' : 'Continue with Apple'}
               icon={
                 <Apple
                   size={22}
@@ -80,13 +112,15 @@ export function LoginScreen({ navigation }: any) {
                   fill={theme.colors.white}
                 />
               }
-              onPress={handleLogin}
+              disabled={loading}
+              onPress={() => handleMockLogin('apple')}
             />
 
             <GradientButton
-              title="Sign in with email"
+              title={loading ? 'Loading...' : 'Sign in with email'}
               icon={<Mail size={22} color={theme.colors.white} />}
-              onPress={handleLogin}
+              disabled={loading}
+              onPress={() => handleMockLogin('email')}
             />
           </View>
 

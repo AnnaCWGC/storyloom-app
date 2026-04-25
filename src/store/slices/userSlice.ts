@@ -1,31 +1,32 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-type UserState = {
-  id: string;
-  name: string;
-  diamonds: number;
-  avatar?: string;
-};
+import { AppUser } from '../../types/user';
 
-const initialState: UserState = {
-  id: 'user-1',
-  name: 'Anna',
-  diamonds: 220,
-  avatar:
-    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
-};
+export type UserState = AppUser | null;
+
+const initialState = null as UserState;
 
 const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser(_state, action: PayloadAction<UserState>) {
+    setUser(_state, action: PayloadAction<AppUser>) {
       return action.payload;
     },
+
+    clearUser() {
+      return null;
+    },
+
     addDiamonds(state, action: PayloadAction<number>) {
+      if (!state) return;
+
       state.diamonds += action.payload;
     },
+
     spendDiamonds(state, action: PayloadAction<number>) {
+      if (!state) return;
+
       if (state.diamonds < action.payload) {
         return;
       }
@@ -35,6 +36,7 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUser, addDiamonds, spendDiamonds } = userSlice.actions;
+export const { setUser, clearUser, addDiamonds, spendDiamonds } =
+  userSlice.actions;
 
 export const userReducer = userSlice.reducer;

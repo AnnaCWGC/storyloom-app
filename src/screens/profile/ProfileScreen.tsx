@@ -22,11 +22,13 @@ import { ProfilePreferenceRow } from '../../components/profile/ProfilePreference
 import { theme } from '../../theme';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
+import { authService } from '../../services/authService';
 import {
   setMatureContentPreference,
   setNotificationPreference,
   setReduceMotionPreference,
 } from '../../store/slices/profileSlice';
+import { clearUser } from '../../store/slices/userSlice';
 
 export function ProfileScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
@@ -48,8 +50,21 @@ export function ProfileScreen({ navigation }: any) {
     navigation.navigate(tabName);
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    await authService.logout();
+
+    dispatch(clearUser());
     dispatch(logout());
+  }
+
+  if (!user) {
+    return (
+      <ScreenContainer>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>No user loaded.</Text>
+        </View>
+      </ScreenContainer>
+    );
   }
 
   return (
@@ -331,5 +346,17 @@ const styles = StyleSheet.create({
     color: theme.colors.secondary,
     fontSize: theme.typography.body,
     fontWeight: '900',
+  },
+  emptyState: {
+    flex: 1,
+    padding: theme.spacing.xxl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.background,
+  },
+  emptyText: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.body,
+    fontWeight: '700',
   },
 });

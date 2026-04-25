@@ -12,8 +12,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ChapterListItem } from '../../components/story-details/ChapterListItem';
 import { InfoPill } from '../../components/story-details/InfoPill';
+import { ErrorState } from '../../components/ui/ErrorState';
 import { GradientButton } from '../../components/ui/GradientButton';
-import { useStories } from '../../hooks/useStories';
+import { LoadingState } from '../../components/ui/LoadingState';
+import { useStory } from '../../hooks/useStory';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { toggleFavoriteStory } from '../../store/slices/librarySlice';
 import { theme } from '../../theme';
@@ -22,7 +24,7 @@ export function StoryDetailsScreen({ route, navigation }: any) {
   const { storyId } = route.params;
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
-  const { findStoryById, loading } = useStories();
+  const { story, loading, error } = useStory(storyId);
 
   const progressByStory = useAppSelector(
     state => state.storyProgress.progressByStory,
@@ -31,16 +33,29 @@ export function StoryDetailsScreen({ route, navigation }: any) {
     state => state.library.favoriteStoryIds,
   );
 
-  const story = findStoryById(storyId);
   const progress = progressByStory[storyId];
   const isFavorite = favoriteStoryIds.includes(storyId);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <LoadingState message="Loading story..." />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.emptyContainer}>
+        <ErrorState message={error} />
+      </View>
+    );
+  }
 
   if (!story) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>
-          {loading ? 'Loading story...' : 'Historia nao encontrada'}
-        </Text>
+        <ErrorState message="Story not found." />
       </View>
     );
   }
@@ -232,14 +247,8 @@ const styles = StyleSheet.create({
   emptyContainer: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
     padding: theme.spacing.xxl,
-  },
-  emptyText: {
-    color: theme.colors.text,
-    fontSize: theme.typography.body,
-    fontWeight: '700',
+    justifyContent: 'center',
   },
   scrollContent: {
     paddingBottom: 48,

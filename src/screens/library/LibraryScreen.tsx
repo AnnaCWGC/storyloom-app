@@ -5,6 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ContinueReadingCard } from '../../components/home/ContinueReadingCard';
 import { SectionHeader } from '../../components/home/SectionHeader';
 import { StoryCoverCard } from '../../components/home/StoryCoverCard';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { LoadingState } from '../../components/ui/LoadingState';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useStories } from '../../hooks/useStories';
 import { useAppSelector } from '../../store/hooks';
@@ -12,7 +14,7 @@ import { theme } from '../../theme';
 
 export function LibraryScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
-  const { stories, loading } = useStories();
+  const { stories, loading, error } = useStories();
 
   const progressByStory = useAppSelector(
     state => state.storyProgress.progressByStory,
@@ -49,6 +51,24 @@ export function LibraryScreen({ navigation }: any) {
     });
   }
 
+  if (loading) {
+    return (
+      <ScreenContainer>
+        <LoadingState message="Loading your library..." />
+      </ScreenContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <ScreenContainer>
+        <View style={styles.stateWrapper}>
+          <ErrorState message={error} />
+        </View>
+      </ScreenContainer>
+    );
+  }
+
   return (
     <ScreenContainer>
       <ScrollView
@@ -81,11 +101,7 @@ export function LibraryScreen({ navigation }: any) {
         <View style={styles.section}>
           <SectionHeader title="Continue reading" actionLabel="" />
 
-          {loading ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyTitle}>Loading stories...</Text>
-            </View>
-          ) : continuedStories.length ? (
+          {continuedStories.length ? (
             continuedStories.map(story => {
               const progress = progressByStory[story.id];
               const chapterTitle =
@@ -115,11 +131,7 @@ export function LibraryScreen({ navigation }: any) {
         <View style={styles.section}>
           <SectionHeader title="Favorites" actionLabel="" />
 
-          {loading ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyTitle}>Loading stories...</Text>
-            </View>
-          ) : favoriteStories.length ? (
+          {favoriteStories.length ? (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -219,5 +231,10 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     fontSize: theme.typography.small,
     lineHeight: 20,
+  },
+  stateWrapper: {
+    flex: 1,
+    padding: theme.spacing.xxl,
+    justifyContent: 'center',
   },
 });

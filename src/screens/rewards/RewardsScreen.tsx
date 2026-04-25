@@ -1,69 +1,56 @@
-import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BookOpen, Clapperboard, Gift, Share2 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { LoadingState } from '../../components/ui/LoadingState';
 import { RewardBalanceCard } from '../../components/rewards/RewardBalanceCard';
 import { DailyRewardCard } from '../../components/rewards/DailyRewardCard';
 import { DiamondPackCard } from '../../components/rewards/DiamondPackCard';
 import { RewardActionCard } from '../../components/rewards/RewardActionCard';
 import { theme } from '../../theme';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { addDiamonds } from '../../store/slices/userSlice';
-
-const diamondPacks = [
-  {
-    id: 'starter-pack',
-    title: 'Starter Pack',
-    amount: 50,
-    priceLabel: 'Mock buy',
-  },
-  {
-    id: 'popular-pack',
-    title: 'Popular Pack',
-    amount: 120,
-    priceLabel: 'Mock buy',
-    badge: 'POPULAR',
-  },
-  {
-    id: 'royal-pack',
-    title: 'Royal Pack',
-    amount: 300,
-    priceLabel: 'Mock buy',
-    badge: 'BEST',
-  },
-  {
-    id: 'legend-pack',
-    title: 'Legend Pack',
-    amount: 600,
-    priceLabel: 'Mock buy',
-  },
-];
+import { useRewards } from '../../hooks/useRewards';
 
 export function RewardsScreen() {
   const insets = useSafeAreaInsets();
-  const dispatch = useAppDispatch();
 
-  const diamonds = useAppSelector(state => state.user?.diamonds ?? 0);
+  const {
+    diamonds,
+    dailyClaimed,
+    lastRewardMessage,
+    diamondPacks,
+    rewardActions,
+    loading,
+    error,
+    claimDailyReward,
+    claimActionReward,
+    claimDiamondPack,
+  } = useRewards();
 
-  const [dailyClaimed, setDailyClaimed] = useState(false);
-  const [lastRewardMessage, setLastRewardMessage] = useState<string | null>(
-    null,
-  );
-
-  function handleClaimDailyReward() {
-    if (dailyClaimed) return;
-
-    dispatch(addDiamonds(20));
-    setDailyClaimed(true);
-    setLastRewardMessage('Daily reward collected: +20 diamonds');
+  if (loading) {
+    return (
+      <ScreenContainer>
+        <LoadingState message="Loading rewards..." />
+      </ScreenContainer>
+    );
   }
 
-  function handleAddMockDiamonds(amount: number, label: string) {
-    dispatch(addDiamonds(amount));
-    setLastRewardMessage(`${label}: +${amount} diamonds`);
+  if (error) {
+    return (
+      <ScreenContainer>
+        <View style={styles.stateWrapper}>
+          <ErrorState message={error} />
+        </View>
+      </ScreenContainer>
+    );
   }
+
+  const iconsByActionId = {
+    'bonus-scene': <Clapperboard size={20} color={theme.colors.secondary} />,
+    'finish-chapter': <BookOpen size={20} color={theme.colors.secondary} />,
+    'invite-friend': <Share2 size={20} color={theme.colors.secondary} />,
+  };
 
   return (
     <ScreenContainer>
@@ -95,7 +82,7 @@ export function RewardsScreen() {
         <DailyRewardCard
           amount={20}
           alreadyClaimed={dailyClaimed}
-          onClaim={handleClaimDailyReward}
+          onClaim={claimDailyReward}
         />
 
         <View style={styles.sectionHeader}>
@@ -103,29 +90,20 @@ export function RewardsScreen() {
           <Text style={styles.sectionCaption}>mock actions</Text>
         </View>
 
-        <RewardActionCard
-          icon={<Clapperboard size={20} color={theme.colors.secondary} />}
-          title="Watch a bonus scene"
-          description="Prototype action. Adds diamonds instantly."
-          amount={15}
-          onPress={() => handleAddMockDiamonds(15, 'Bonus scene watched')}
-        />
-
-        <RewardActionCard
-          icon={<BookOpen size={20} color={theme.colors.secondary} />}
-          title="Finish a chapter"
-          description="Reward the player for completing a story chapter."
-          amount={10}
-          onPress={() => handleAddMockDiamonds(10, 'Chapter reward')}
-        />
-
-        <RewardActionCard
-          icon={<Share2 size={20} color={theme.colors.secondary} />}
-          title="Invite a friend"
-          description="Placeholder for future referral reward."
-          amount={30}
-          onPress={() => handleAddMockDiamonds(30, 'Friend invite reward')}
-        />
+        {rewardActions.map(action => (
+          <RewardActionCard
+            key={action.id}
+            icon={
+              iconsByActionId[action.id as keyof typeof iconsByActionId] ?? (
+                <Gift size={20} color={theme.colors.secondary} />
+              )
+            }
+            title={action.title}
+            description={action.description}
+            amount={action.amount}
+            onPress={() => claimActionReward(action.id)}
+          />
+        ))}
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Diamond packs</Text>
@@ -140,7 +118,7 @@ export function RewardsScreen() {
               amount={pack.amount}
               priceLabel={pack.priceLabel}
               badge={pack.badge}
-              onPress={() => handleAddMockDiamonds(pack.amount, pack.title)}
+              onPress={() => claimDiamondPack(pack.id)}
             />
           ))}
         </View>
@@ -172,6 +150,11 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: theme.spacing.xxl,
+  },
+  stateWrapper: {
+    flex: 1,
+    padding: theme.spacing.xxl,
+    justifyContent: 'center',
   },
   title: {
     color: theme.colors.text,

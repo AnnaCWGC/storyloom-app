@@ -14,6 +14,7 @@ import {
 import { authReducer } from './slices/authSlice';
 import { libraryReducer } from './slices/librarySlice';
 import { profileReducer } from './slices/profileSlice';
+import { rewardsReducer } from './slices/rewardsSlice';
 import { storyProgressReducer } from './slices/storyProgressSlice';
 import { userReducer } from './slices/userSlice';
 
@@ -23,12 +24,13 @@ const rootReducer = combineReducers({
   storyProgress: storyProgressReducer,
   library: libraryReducer,
   profile: profileReducer,
+  rewards: rewardsReducer,
 });
 
 const persistConfig = {
   key: 'root-v2',
   storage: AsyncStorage,
-  whitelist: ['auth', 'user', 'storyProgress', 'library', 'profile'],
+  whitelist: ['auth', 'user', 'storyProgress', 'library', 'profile', 'rewards'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

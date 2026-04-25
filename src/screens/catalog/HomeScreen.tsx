@@ -13,6 +13,7 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { ScreenContainer } from '../../components/ui/ScreenContainer';
 import { useStories } from '../../hooks/useStories';
+import { useStoryProgress } from '../../hooks/useStoryProgress';
 import { useAppSelector } from '../../store/hooks';
 import { theme } from '../../theme';
 
@@ -23,9 +24,7 @@ export function HomeScreen({ navigation }: any) {
   const { stories, loading, error } = useStories();
 
   const user = useAppSelector(state => state.user);
-  const progressByStory = useAppSelector(
-    state => state.storyProgress.progressByStory,
-  );
+  const { progressByStory } = useStoryProgress();
 
   const featuredStory = stories[0];
 

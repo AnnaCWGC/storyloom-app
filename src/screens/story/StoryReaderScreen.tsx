@@ -12,13 +12,10 @@ import { DialogueBox } from '../../components/reader/DialogueBox';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { useStory } from '../../hooks/useStory';
+import { useStoryProgress } from '../../hooks/useStoryProgress';
 import { theme } from '../../theme';
 import { StoryChoice } from '../../types/story';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import {
-  registerChoice,
-  saveProgress,
-} from '../../store/slices/storyProgressSlice';
 import { spendDiamonds } from '../../store/slices/userSlice';
 
 export function StoryReaderScreen({ route, navigation }: any) {
@@ -29,9 +26,12 @@ export function StoryReaderScreen({ route, navigation }: any) {
 
   const user = useAppSelector(state => state.user);
   const diamonds = user?.diamonds ?? 0;
-  const savedProgress = useAppSelector(
-    state => state.storyProgress.progressByStory[storyId],
-  );
+  const {
+    getStoryProgress,
+    saveStoryProgress,
+    registerStoryChoice,
+  } = useStoryProgress();
+  const savedProgress = getStoryProgress(storyId);
 
   const chapter = useMemo(() => {
     return story?.chapters.find(item => item.id === chapterId);
@@ -101,23 +101,21 @@ export function StoryReaderScreen({ route, navigation }: any) {
 
   const scene = currentScene;
 
-  function persistProgress(nextSceneId: string) {
-    dispatch(
-      saveProgress({
-        storyId,
-        chapterId,
-        sceneId: nextSceneId,
-        progress: getSceneProgress(nextSceneId),
-      }),
-    );
+  async function persistProgress(nextSceneId: string) {
+    await saveStoryProgress({
+      storyId,
+      chapterId,
+      sceneId: nextSceneId,
+      progress: getSceneProgress(nextSceneId),
+    });
   }
 
-  function handleGoToScene(nextSceneId: string) {
-    persistProgress(nextSceneId);
+  async function handleGoToScene(nextSceneId: string) {
+    await persistProgress(nextSceneId);
     setCurrentSceneId(nextSceneId);
   }
 
-  function handleChoicePress(choice: StoryChoice) {
+  async function handleChoicePress(choice: StoryChoice) {
     if (choice.isPremium) {
       const cost = choice.cost ?? 0;
 
@@ -129,16 +127,14 @@ export function StoryReaderScreen({ route, navigation }: any) {
       dispatch(spendDiamonds(cost));
     }
 
-    dispatch(
-      registerChoice({
-        storyId,
-        chapterId,
-        sceneId: scene.id,
-        choiceId: choice.id,
-        relationshipTarget: choice.effect?.target,
-        relationshipValue: choice.effect?.value,
-      }),
-    );
+    await registerStoryChoice({
+      storyId,
+      chapterId,
+      sceneId: scene.id,
+      choiceId: choice.id,
+      relationshipTarget: choice.effect?.target,
+      relationshipValue: choice.effect?.value,
+    });
 
     if (choice.effect?.message) {
       setFeedbackMessage(choice.effect.message);
@@ -146,29 +142,29 @@ export function StoryReaderScreen({ route, navigation }: any) {
       setFeedbackMessage(null);
     }
 
-    handleGoToScene(choice.nextSceneId);
+    await handleGoToScene(choice.nextSceneId);
   }
 
-  function handleContinue() {
+  async function handleContinue() {
     if (!scene.nextSceneId) return;
 
     setFeedbackMessage(null);
-    handleGoToScene(scene.nextSceneId);
+    await handleGoToScene(scene.nextSceneId);
   }
 
   function handleBack() {
     navigation.goBack();
   }
 
-  function handleEndChapter() {
-    dispatch(
-      saveProgress({
+  async function handleEndChapter() {
+    if (scene) {
+      await saveStoryProgress({
         storyId,
         chapterId,
         sceneId: scene.id,
         progress: 1,
-      }),
-    );
+      });
+    }
 
     navigation.navigate('App');
   }

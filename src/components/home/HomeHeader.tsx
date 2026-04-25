@@ -1,15 +1,16 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { Gem } from 'lucide-react-native';
+import { Gem, Key } from 'lucide-react-native';
 
 import { theme } from '../../theme';
 
 type HomeHeaderProps = {
   name: string;
   diamonds: number;
+  keys: number;
   avatar?: string;
 };
 
-export function HomeHeader({ name, diamonds, avatar }: HomeHeaderProps) {
+export function HomeHeader({ name, diamonds, keys, avatar }: HomeHeaderProps) {
   return (
     <View style={styles.container}>
       <View style={styles.leftContent}>
@@ -21,15 +22,22 @@ export function HomeHeader({ name, diamonds, avatar }: HomeHeaderProps) {
           </View>
         )}
 
-        <View>
-          <Text style={styles.title}>Hello, {name}</Text>
-          <Text style={styles.subtitle}>What do you want to live today?</Text>
+        <View style={styles.textContent}>
+          <Text style={styles.title} numberOfLines={1}>Hello, {name}</Text>
+          <Text style={styles.subtitle} numberOfLines={1}>What do you want to live today?</Text>
         </View>
       </View>
 
-      <View style={styles.diamondsPill}>
-        <Gem size={16} color={theme.colors.secondary} fill={theme.colors.secondary} />
-        <Text style={styles.diamondsText}>{diamonds}</Text>
+      <View style={styles.walletRow}>
+        <View style={styles.walletPill}>
+          <Gem size={16} color={theme.colors.secondary} fill={theme.colors.secondary} />
+          <Text style={styles.walletText}>{diamonds}</Text>
+        </View>
+
+        <View style={styles.walletPill}>
+          <Key size={16} color={theme.colors.secondary} />
+          <Text style={styles.walletText}>{keys}</Text>
+        </View>
       </View>
     </View>
   );
@@ -72,6 +80,9 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.body,
     fontWeight: '800',
   },
+  textContent: {
+    flex: 1,
+  },
   title: {
     color: theme.colors.text,
     fontSize: 22,
@@ -83,7 +94,12 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.tiny,
     marginTop: 2,
   },
-  diamondsPill: {
+  walletRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  walletPill: {
     height: 40,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.radius.pill,
@@ -94,7 +110,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: theme.spacing.xs,
   },
-  diamondsText: {
+  walletText: {
     color: theme.colors.text,
     fontSize: theme.typography.small,
     fontWeight: '800',

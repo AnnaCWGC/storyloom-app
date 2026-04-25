@@ -17,6 +17,7 @@ export function RewardsScreen() {
 
   const {
     diamonds,
+    keys,
     dailyClaimed,
     lastRewardMessage,
     diamondPacks,
@@ -71,7 +72,7 @@ export function RewardsScreen() {
           Collect diamonds, unlock premium choices and keep your stories moving.
         </Text>
 
-        <RewardBalanceCard diamonds={diamonds} />
+        <RewardBalanceCard diamonds={diamonds} keys={keys} />
 
         {lastRewardMessage ? (
           <View style={styles.messagePill}>

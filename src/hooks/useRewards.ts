@@ -10,12 +10,12 @@ import {
   registerReward,
   setDailyClaimed,
 } from '../store/slices/rewardsSlice';
-import { addDiamonds } from '../store/slices/userSlice';
+import { useWallet } from './useWallet';
 
 export function useRewards() {
   const dispatch = useAppDispatch();
+  const { diamonds, keys, addDiamonds } = useWallet();
 
-  const diamonds = useAppSelector(state => state.user?.diamonds ?? 0);
   const dailyClaimed = useAppSelector(state => state.rewards.dailyClaimed);
   const lastRewardMessage = useAppSelector(
     state => state.rewards.lastRewardMessage,
@@ -52,11 +52,12 @@ export function useRewards() {
   }, [loadRewards]);
 
   const applyReward = useCallback(
-    (amount: number, message: string) => {
-      dispatch(addDiamonds(amount));
+    async (amount: number, message: string) => {
+      await addDiamonds(amount, 'reward');
+
       dispatch(registerReward({ amount, message }));
     },
-    [dispatch],
+    [addDiamonds, dispatch],
   );
 
   const claimDailyReward = useCallback(async () => {
@@ -67,7 +68,7 @@ export function useRewards() {
 
       const response = await rewardsService.claimDailyReward();
 
-      applyReward(response.amount, response.message);
+      await applyReward(response.amount, response.message);
       dispatch(setDailyClaimed(true));
     } finally {
       setClaiming(false);
@@ -83,7 +84,7 @@ export function useRewards() {
 
         const response = await rewardsService.claimActionReward(actionId);
 
-        applyReward(response.amount, response.message);
+        await applyReward(response.amount, response.message);
       } finally {
         setClaiming(false);
       }
@@ -100,7 +101,7 @@ export function useRewards() {
 
         const response = await rewardsService.claimDiamondPack(packId);
 
-        applyReward(response.amount, response.message);
+        await applyReward(response.amount, response.message);
       } finally {
         setClaiming(false);
       }
@@ -110,6 +111,7 @@ export function useRewards() {
 
   return {
     diamonds,
+    keys,
     dailyClaimed,
     lastRewardMessage,
     history,

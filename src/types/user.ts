@@ -3,6 +3,7 @@ export type AppUser = {
   name: string;
   email: string;
   diamonds: number;
+  keys: number;
   avatar?: string;
 };
 

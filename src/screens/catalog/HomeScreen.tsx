@@ -119,6 +119,7 @@ export function HomeScreen({ navigation }: any) {
         <HomeHeader
           name={user?.name ?? 'Reader'}
           diamonds={user?.diamonds ?? 0}
+          keys={user?.keys ?? 0}
           avatar={user?.avatar}
         />
 

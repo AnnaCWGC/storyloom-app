@@ -4,6 +4,7 @@ import {
   BookOpen,
   Gem,
   Heart,
+  Key,
   Library,
   LogOut,
   Moon,
@@ -106,14 +107,27 @@ export function ProfileScreen({ navigation }: any) {
             </View>
           </View>
 
-          <View style={styles.diamondRow}>
-            <View style={styles.diamondIcon}>
-              <Gem size={20} color={theme.colors.white} fill={theme.colors.secondary} />
+          <View style={styles.walletRow}>
+            <View style={styles.walletItem}>
+              <View style={styles.walletIcon}>
+                <Gem size={20} color={theme.colors.white} fill={theme.colors.secondary} />
+              </View>
+
+              <View>
+                <Text style={styles.walletValue}>{user.diamonds}</Text>
+                <Text style={styles.walletLabel}>diamonds available</Text>
+              </View>
             </View>
 
-            <View>
-              <Text style={styles.diamondValue}>{user.diamonds}</Text>
-              <Text style={styles.diamondLabel}>diamonds available</Text>
+            <View style={styles.walletItem}>
+              <View style={styles.walletIcon}>
+                <Key size={20} color={theme.colors.white} />
+              </View>
+
+              <View>
+                <Text style={styles.walletValue}>{user.keys ?? 0}</Text>
+                <Text style={styles.walletLabel}>keys available</Text>
+              </View>
             </View>
           </View>
         </LinearGradient>
@@ -152,8 +166,8 @@ export function ProfileScreen({ navigation }: any) {
           <ProfileMenuItem
             icon={<Gem size={20} color={theme.colors.secondary} />}
             title="Rewards"
-            description="Collect diamonds and daily bonuses."
-            rightText={`${user.diamonds}`}
+            description="Collect diamonds, keys and daily bonuses."
+            rightText={`${user.diamonds} / ${user.keys ?? 0}`}
             onPress={() => goToTab('Rewards')}
           />
 
@@ -287,7 +301,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  diamondRow: {
+  walletRow: {
     minHeight: 72,
     borderRadius: theme.radius.xl,
     backgroundColor: 'rgba(15,13,22,0.32)',
@@ -296,8 +310,14 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
+    gap: theme.spacing.lg,
   },
-  diamondIcon: {
+  walletItem: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  walletIcon: {
     width: 46,
     height: 46,
     borderRadius: 23,
@@ -306,12 +326,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: theme.spacing.md,
   },
-  diamondValue: {
+  walletValue: {
     color: theme.colors.text,
     fontSize: 24,
     fontWeight: '900',
   },
-  diamondLabel: {
+  walletLabel: {
     color: theme.colors.textSecondary,
     fontSize: theme.typography.tiny,
     fontWeight: '700',

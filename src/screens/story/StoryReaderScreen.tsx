@@ -13,19 +13,19 @@ import { ErrorState } from '../../components/ui/ErrorState';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { useStory } from '../../hooks/useStory';
 import { useStoryProgress } from '../../hooks/useStoryProgress';
+import { useWallet } from '../../hooks/useWallet';
 import { theme } from '../../theme';
 import { StoryChoice } from '../../types/story';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { spendDiamonds } from '../../store/slices/userSlice';
 
 export function StoryReaderScreen({ route, navigation }: any) {
   const { storyId, chapterId } = route.params;
 
-  const dispatch = useAppDispatch();
   const { story, loading, error } = useStory(storyId);
-
-  const user = useAppSelector(state => state.user);
-  const diamonds = user?.diamonds ?? 0;
+  const {
+    diamonds,
+    canSpendCurrency,
+    spendDiamonds,
+  } = useWallet();
   const {
     getStoryProgress,
     saveStoryProgress,
@@ -119,12 +119,12 @@ export function StoryReaderScreen({ route, navigation }: any) {
     if (choice.isPremium) {
       const cost = choice.cost ?? 0;
 
-      if (diamonds < cost) {
+      if (!canSpendCurrency('diamonds', cost)) {
         setFeedbackMessage('Você não tem diamantes suficientes para essa escolha.');
         return;
       }
 
-      dispatch(spendDiamonds(cost));
+      await spendDiamonds(cost, 'premium_choice', choice.id);
     }
 
     await registerStoryChoice({

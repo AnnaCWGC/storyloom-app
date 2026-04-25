@@ -21,22 +21,44 @@ const userSlice = createSlice({
     addDiamonds(state, action: PayloadAction<number>) {
       if (!state) return;
 
-      state.diamonds += action.payload;
+      state.diamonds = (state.diamonds ?? 0) + action.payload;
     },
 
     spendDiamonds(state, action: PayloadAction<number>) {
       if (!state) return;
 
-      if (state.diamonds < action.payload) {
+      if ((state.diamonds ?? 0) < action.payload) {
         return;
       }
 
       state.diamonds -= action.payload;
     },
+
+    addKeys(state, action: PayloadAction<number>) {
+      if (!state) return;
+
+      state.keys = (state.keys ?? 0) + action.payload;
+    },
+
+    spendKeys(state, action: PayloadAction<number>) {
+      if (!state) return;
+
+      if ((state.keys ?? 0) < action.payload) {
+        return;
+      }
+
+      state.keys -= action.payload;
+    },
   },
 });
 
-export const { setUser, clearUser, addDiamonds, spendDiamonds } =
-  userSlice.actions;
+export const {
+  setUser,
+  clearUser,
+  addDiamonds,
+  spendDiamonds,
+  addKeys,
+  spendKeys,
+} = userSlice.actions;
 
 export const userReducer = userSlice.reducer;

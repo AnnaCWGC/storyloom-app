@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type ErrorStateProps = {
   message: string;

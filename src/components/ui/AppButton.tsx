@@ -8,7 +8,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type AppButtonProps = PressableProps & {
   title: string;

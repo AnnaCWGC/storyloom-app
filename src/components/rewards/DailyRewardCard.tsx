@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CalendarCheck, Gem } from 'lucide-react-native';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type DailyRewardCardProps = {
   amount: number;

@@ -1,7 +1,7 @@
 import { StyleSheet, TextInput, View } from 'react-native';
 import { Search } from 'lucide-react-native';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type SearchBarProps = {
   value: string;

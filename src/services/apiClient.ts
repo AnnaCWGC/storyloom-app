@@ -1,4 +1,4 @@
-import { env } from '../config/env';
+import { env } from '@/config/env';
 
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';

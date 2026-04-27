@@ -1,3 +1,4 @@
+import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   Bell,
@@ -17,45 +18,43 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { ProfileStatCard } from '../../components/profile/ProfileStatCard';
-import { ProfileMenuItem } from '../../components/profile/ProfileMenuItem';
-import { ProfilePreferenceRow } from '../../components/profile/ProfilePreferenceRow';
-import { theme } from '../../theme';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { logout } from '../../store/slices/authSlice';
-import { authService } from '../../services/authService';
-import {
-  setMatureContentPreference,
-  setNotificationPreference,
-  setReduceMotionPreference,
-} from '../../store/slices/profileSlice';
-import { clearUser } from '../../store/slices/userSlice';
-import { useLibrary } from '../../hooks/useLibrary';
+import { ScreenContainer } from '@/components/ui/ScreenContainer';
+import { ProfileStatCard } from '@/components/profile/ProfileStatCard';
+import { ProfileMenuItem } from '@/components/profile/ProfileMenuItem';
+import { ProfilePreferenceRow } from '@/components/profile/ProfilePreferenceRow';
+import { theme } from '@/theme';
+import { useLogout } from '@/domains/auth';
+import { useLibrary } from '@/domains/library';
+import { useProfilePreferences } from '@/domains/profile';
+import { useAppSelector } from '@/store/hooks';
+import { AppTabParamList } from '@/navigation/navigation.types';
 
-export function ProfileScreen({ navigation }: any) {
+type ProfileScreenProps = BottomTabScreenProps<AppTabParamList, 'Profile'>;
+
+export function ProfileScreen({ navigation }: ProfileScreenProps) {
   const insets = useSafeAreaInsets();
-  const dispatch = useAppDispatch();
+  const {
+    loading: logoutLoading,
+    logout: handleLogout,
+  } = useLogout();
 
   const user = useAppSelector(state => state.user);
   const progressByStory = useAppSelector(
     state => state.storyProgress.progressByStory,
   );
   const { favoriteStoryIds } = useLibrary();
-  const preferences = useAppSelector(state => state.profile.preferences);
+  const {
+    preferences,
+    setNotificationsEnabled,
+    setMatureContentEnabled,
+    setReduceMotionEnabled,
+  } = useProfilePreferences();
 
   const storiesInProgress = Object.keys(progressByStory).length;
   const favoriteCount = favoriteStoryIds.length;
 
-  function goToTab(tabName: string) {
+  function goToTab(tabName: keyof AppTabParamList) {
     navigation.navigate(tabName);
-  }
-
-  async function handleLogout() {
-    await authService.logout();
-
-    dispatch(clearUser());
-    dispatch(logout());
   }
 
   if (!user) {
@@ -208,27 +207,21 @@ export function ProfileScreen({ navigation }: any) {
             title="Notifications"
             description="Get reminders about new chapters and rewards."
             value={preferences.notificationsEnabled}
-            onValueChange={value =>
-              dispatch(setNotificationPreference(value))
-            }
+            onValueChange={setNotificationsEnabled}
           />
 
           <ProfilePreferenceRow
             title="Mature content"
             description="Allow stories with darker or mature themes."
             value={preferences.matureContentEnabled}
-            onValueChange={value =>
-              dispatch(setMatureContentPreference(value))
-            }
+            onValueChange={setMatureContentEnabled}
           />
 
           <ProfilePreferenceRow
             title="Reduce motion"
             description="Limit animations and visual transitions."
             value={preferences.reduceMotionEnabled}
-            onValueChange={value =>
-              dispatch(setReduceMotionPreference(value))
-            }
+            onValueChange={setReduceMotionEnabled}
           />
         </View>
 
@@ -250,9 +243,15 @@ export function ProfileScreen({ navigation }: any) {
           />
         </View>
 
-        <Pressable style={styles.logoutButton} onPress={handleLogout}>
+        <Pressable
+          style={[styles.logoutButton, logoutLoading && styles.disabledButton]}
+          onPress={handleLogout}
+          disabled={logoutLoading}
+        >
           <LogOut size={20} color={theme.colors.secondary} />
-          <Text style={styles.logoutText}>Sair da conta</Text>
+          <Text style={styles.logoutText}>
+            {logoutLoading ? 'Saindo...' : 'Sair da conta'}
+          </Text>
         </Pressable>
       </ScrollView>
     </ScreenContainer>
@@ -389,6 +388,9 @@ const styles = StyleSheet.create({
     color: theme.colors.secondary,
     fontSize: theme.typography.body,
     fontWeight: '900',
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   emptyState: {
     flex: 1,

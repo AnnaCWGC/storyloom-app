@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Crown, Infinity, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type VipSubscriptionCardProps = {
   isVip: boolean;

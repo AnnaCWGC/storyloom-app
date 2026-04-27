@@ -1,14 +1,15 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Compass, Gift, Home, Library, User } from 'lucide-react-native';
 
-import { HomeScreen } from '../screens/catalog/HomeScreen';
-import { ExploreScreen } from '../screens/catalog/ExploreScreen';
-import { LibraryScreen } from '../screens/library/LibraryScreen';
-import { ProfileScreen } from '../screens/profile/ProfileScreen';
-import { RewardsScreen } from '../screens/rewards/RewardsScreen';
-import { theme } from '../theme';
+import { HomeScreen } from '@/screens/catalog/HomeScreen';
+import { ExploreScreen } from '@/screens/catalog/ExploreScreen';
+import { LibraryScreen } from '@/screens/library/LibraryScreen';
+import { ProfileScreen } from '@/screens/profile/ProfileScreen';
+import { RewardsScreen } from '@/screens/rewards/RewardsScreen';
+import { theme } from '@/theme';
+import { AppTabParamList } from '@/navigation/navigation.types';
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<AppTabParamList>();
 
 export function AppTabs() {
   return (

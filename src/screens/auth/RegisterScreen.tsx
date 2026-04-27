@@ -1,10 +1,17 @@
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { GradientButton } from '../../components/ui/GradientButton';
-import { theme } from '../../theme';
+import { ScreenContainer } from '@/components/ui/ScreenContainer';
+import { GradientButton } from '@/components/ui/GradientButton';
+import { AuthStackParamList } from '@/navigation/navigation.types';
+import { theme } from '@/theme';
 
-export function RegisterScreen({ navigation }: any) {
+type RegisterScreenProps = NativeStackScreenProps<
+  AuthStackParamList,
+  'Register'
+>;
+
+export function RegisterScreen({ navigation }: RegisterScreenProps) {
   return (
     <ScreenContainer>
       <View style={styles.content}>

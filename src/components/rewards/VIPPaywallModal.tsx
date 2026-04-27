@@ -2,7 +2,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Crown, Gem, Infinity, Star, X, Zap } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type VIPPaywallModalProps = {
   visible: boolean;

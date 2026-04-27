@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ArrowLeft, Gem, Menu } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type ReaderTopBarProps = {
   chapterTitle: string;

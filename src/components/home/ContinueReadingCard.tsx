@@ -1,8 +1,8 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 
-import { Story } from '../../types/story';
-import { theme } from '../../theme';
+import { Story } from '@/domains/stories';
+import { theme } from '@/theme';
 
 type ContinueReadingCardProps = {
   story: Story;

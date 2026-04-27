@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 const genres = ['All', 'Romance', 'Fantasy', 'Drama', 'Mystery', 'Horror'];
 

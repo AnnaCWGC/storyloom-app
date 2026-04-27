@@ -1,23 +1,35 @@
 import { useMemo, useState } from 'react';
+import { CompositeScreenProps } from '@react-navigation/native';
+import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ContinueReadingCard } from '../../components/home/ContinueReadingCard';
-import { FeaturedStoryCard } from '../../components/home/FeaturedStoryCard';
-import { GenreChips } from '../../components/home/GenreChips';
-import { HomeHeader } from '../../components/home/HomeHeader';
-import { SearchBar } from '../../components/home/SearchBar';
-import { SectionHeader } from '../../components/home/SectionHeader';
-import { StoryCoverCard } from '../../components/home/StoryCoverCard';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { LoadingState } from '../../components/ui/LoadingState';
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { useStories } from '../../hooks/useStories';
-import { useStoryProgress } from '../../hooks/useStoryProgress';
-import { useAppSelector } from '../../store/hooks';
-import { theme } from '../../theme';
+import { ContinueReadingCard } from '@/components/home/ContinueReadingCard';
+import { FeaturedStoryCard } from '@/components/home/FeaturedStoryCard';
+import { GenreChips } from '@/components/home/GenreChips';
+import { HomeHeader } from '@/components/home/HomeHeader';
+import { SearchBar } from '@/components/home/SearchBar';
+import { SectionHeader } from '@/components/home/SectionHeader';
+import { StoryCoverCard } from '@/components/home/StoryCoverCard';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { ScreenContainer } from '@/components/ui/ScreenContainer';
+import { useStories } from '@/domains/stories';
+import { useStoryProgress } from '@/domains/progress';
+import {
+  AppTabParamList,
+  RootStackParamList,
+} from '@/navigation/navigation.types';
+import { useAppSelector } from '@/store/hooks';
+import { theme } from '@/theme';
 
-export function HomeScreen({ navigation }: any) {
+type HomeScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<AppTabParamList, 'Home'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export function HomeScreen({ navigation }: HomeScreenProps) {
   const [search, setSearch] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const insets = useSafeAreaInsets();

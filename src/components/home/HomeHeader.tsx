@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { Crown, Gem, Infinity, Key } from 'lucide-react-native';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type HomeHeaderProps = {
   name: string;

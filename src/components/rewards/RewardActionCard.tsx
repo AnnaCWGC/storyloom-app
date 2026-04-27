@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight, Gem } from 'lucide-react-native';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type RewardActionCardProps = {
   icon: ReactNode;

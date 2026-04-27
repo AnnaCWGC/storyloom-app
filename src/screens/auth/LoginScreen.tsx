@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   ImageBackground,
   Pressable,
@@ -9,50 +9,42 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Apple, Mail } from 'lucide-react-native';
 
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { GradientButton } from '../../components/ui/GradientButton';
-import { SocialButton } from '../../components/ui/SocialButton';
-import { theme } from '../../theme';
-import { useAppDispatch } from '../../store/hooks';
-import { login } from '../../store/slices/authSlice';
-import { setUser } from '../../store/slices/userSlice';
-import { authService } from '../../services/authService';
+import { ScreenContainer } from '@/components/ui/ScreenContainer';
+import { GradientButton } from '@/components/ui/GradientButton';
+import { SocialButton } from '@/components/ui/SocialButton';
+import { theme } from '@/theme';
+import { useAuth } from '@/domains/auth';
+import { AuthStackParamList } from '@/navigation/navigation.types';
 
-const HERO_IMAGE = require('../../assets/images/auth/login-hero.png');
+const HERO_IMAGE = require('@/assets/images/auth/login-hero.png');
 
-export function LoginScreen({ navigation }: any) {
-  const dispatch = useAppDispatch();
-  const [loading, setLoading] = useState(false);
+type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
+
+export function LoginScreen({ navigation }: LoginScreenProps) {
+  const {
+    loading,
+    loginWithEmail,
+    loginWithGoogle,
+    loginWithApple,
+  } = useAuth();
 
   async function handleMockLogin(provider: 'email' | 'google' | 'apple') {
     if (loading) return;
 
-    try {
-      setLoading(true);
-
-      const response =
-        provider === 'google'
-          ? await authService.loginWithGoogle()
-          : provider === 'apple'
-            ? await authService.loginWithApple()
-            : await authService.loginWithEmail({
-                email: 'anna@storyloom.app',
-                password: 'mock-password',
-              });
-
-      dispatch(
-        login({
-          accessToken: response.accessToken,
-          refreshToken: response.refreshToken,
-        }),
-      );
-
-      dispatch(setUser(response.user));
-
-      navigation.replace('App');
-    } finally {
-      setLoading(false);
+    if (provider === 'google') {
+      await loginWithGoogle();
+      return;
     }
+
+    if (provider === 'apple') {
+      await loginWithApple();
+      return;
+    }
+
+    await loginWithEmail({
+      email: 'anna@storyloom.app',
+      password: 'mock-password',
+    });
   }
 
   function handleRegister() {

@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { StoryChoice } from '../../types/story';
-import { theme } from '../../theme';
+import { StoryChoice } from '@/domains/stories';
+import { theme } from '@/theme';
 
 type DialogueBoxProps = {
   speaker?: string;

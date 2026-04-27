@@ -3,17 +3,17 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BookOpen, Clapperboard, Gift, Share2 } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { LoadingState } from '../../components/ui/LoadingState';
-import { RewardBalanceCard } from '../../components/rewards/RewardBalanceCard';
-import { DailyRewardCard } from '../../components/rewards/DailyRewardCard';
-import { DiamondPackCard } from '../../components/rewards/DiamondPackCard';
-import { RewardActionCard } from '../../components/rewards/RewardActionCard';
-import { VipSubscriptionCard } from '../../components/rewards/VipSubscriptionCard';
-import { VIPPaywallModal } from '../../components/rewards/VIPPaywallModal';
-import { theme } from '../../theme';
-import { useRewards } from '../../hooks/useRewards';
+import { ScreenContainer } from '@/components/ui/ScreenContainer';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { RewardBalanceCard } from '@/components/rewards/RewardBalanceCard';
+import { DailyRewardCard } from '@/components/rewards/DailyRewardCard';
+import { DiamondPackCard } from '@/components/rewards/DiamondPackCard';
+import { RewardActionCard } from '@/components/rewards/RewardActionCard';
+import { VipSubscriptionCard } from '@/components/rewards/VipSubscriptionCard';
+import { VIPPaywallModal } from '@/components/rewards/VIPPaywallModal';
+import { theme } from '@/theme';
+import { useRewards } from '@/domains/rewards';
 
 export function RewardsScreen() {
   const insets = useSafeAreaInsets();

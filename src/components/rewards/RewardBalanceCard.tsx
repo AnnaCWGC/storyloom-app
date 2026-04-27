@@ -2,8 +2,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Crown, Gem, Infinity, Key, Sparkles } from 'lucide-react-native';
 
-import { useCountdown } from '../../hooks/useCountdown';
-import { theme } from '../../theme';
+import { useCountdown } from '@/hooks/useCountdown';
+import { theme } from '@/theme';
 
 type RewardBalanceCardProps = {
   diamonds: number;

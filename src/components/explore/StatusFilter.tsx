@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 export type ExploreStatusFilter = 'all' | 'new' | 'ongoing' | 'completed';
 

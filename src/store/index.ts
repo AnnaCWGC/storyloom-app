@@ -11,14 +11,14 @@ import {
   persistStore,
 } from 'redux-persist';
 
-import { authReducer } from './slices/authSlice';
-import { libraryReducer } from './slices/librarySlice';
-import { keysRechargeReducer } from './slices/keysRechargeSlice';
-import { profileReducer } from './slices/profileSlice';
-import { rewardsReducer } from './slices/rewardsSlice';
-import { storyProgressReducer } from './slices/storyProgressSlice';
-import { userReducer } from './slices/userSlice';
-import { vipReducer } from './slices/vipSlice';
+import { authReducer } from '@/domains/auth/auth.slice';
+import { userReducer } from '@/domains/auth/user.slice';
+import { libraryReducer } from '@/domains/library';
+import { profileReducer } from '@/domains/profile/profile.slice';
+import { storyProgressReducer } from '@/domains/progress';
+import { rewardsReducer } from '@/domains/rewards';
+import { vipReducer } from '@/domains/vip';
+import { keysRechargeReducer } from '@/domains/wallet';
 
 const rootReducer = combineReducers({
   auth: authReducer,

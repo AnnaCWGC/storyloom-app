@@ -1,8 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { Crown, Infinity, Key, Sparkles } from 'lucide-react-native';
 
-import { useCountdown } from '../../hooks/useCountdown';
-import { theme } from '../../theme';
+import { useCountdown } from '@/hooks/useCountdown';
+import { theme } from '@/theme';
 
 type ChapterAccessCardProps = {
   keys: number;

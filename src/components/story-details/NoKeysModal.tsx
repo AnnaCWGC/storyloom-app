@@ -2,8 +2,8 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Crown, Gem, Key, X } from 'lucide-react-native';
 
-import { useCountdown } from '../../hooks/useCountdown';
-import { theme } from '../../theme';
+import { useCountdown } from '@/hooks/useCountdown';
+import { theme } from '@/theme';
 
 type NoKeysModalProps = {
   visible: boolean;

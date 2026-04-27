@@ -1,19 +1,31 @@
+import { CompositeScreenProps } from '@react-navigation/native';
+import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Heart, PlayCircle } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ContinueReadingCard } from '../../components/home/ContinueReadingCard';
-import { SectionHeader } from '../../components/home/SectionHeader';
-import { StoryCoverCard } from '../../components/home/StoryCoverCard';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { LoadingState } from '../../components/ui/LoadingState';
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { useLibrary } from '../../hooks/useLibrary';
-import { useStories } from '../../hooks/useStories';
-import { useStoryProgress } from '../../hooks/useStoryProgress';
-import { theme } from '../../theme';
+import { ContinueReadingCard } from '@/components/home/ContinueReadingCard';
+import { SectionHeader } from '@/components/home/SectionHeader';
+import { StoryCoverCard } from '@/components/home/StoryCoverCard';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { ScreenContainer } from '@/components/ui/ScreenContainer';
+import { useLibrary } from '@/domains/library';
+import { useStories } from '@/domains/stories';
+import { useStoryProgress } from '@/domains/progress';
+import {
+  AppTabParamList,
+  RootStackParamList,
+} from '@/navigation/navigation.types';
+import { theme } from '@/theme';
 
-export function LibraryScreen({ navigation }: any) {
+type LibraryScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<AppTabParamList, 'Library'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export function LibraryScreen({ navigation }: LibraryScreenProps) {
   const insets = useSafeAreaInsets();
   const { stories, loading, error } = useStories();
 

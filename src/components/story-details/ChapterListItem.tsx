@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ChevronRight, Crown, Key } from 'lucide-react-native';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type ChapterListItemProps = {
   index: number;

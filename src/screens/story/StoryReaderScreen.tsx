@@ -4,16 +4,30 @@ import {
   Text,
   View,
 } from 'react-native';
+import { CompositeScreenProps } from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { ReaderTopBar } from '../../components/reader/ReaderTopBar';
-import { DialogueBox } from '../../components/reader/DialogueBox';
-import { LoadingState } from '../../components/ui/LoadingState';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { useStoryReader } from '../../hooks/useStoryReader';
-import { theme } from '../../theme';
+import { ReaderTopBar } from '@/components/reader/ReaderTopBar';
+import { DialogueBox } from '@/components/reader/DialogueBox';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { useStoryReader } from '@/domains/reader';
+import {
+  RootStackParamList,
+  StoryStackParamList,
+} from '@/navigation/navigation.types';
+import { theme } from '@/theme';
 
-export function StoryReaderScreen({ route, navigation }: any) {
+type StoryReaderScreenProps = CompositeScreenProps<
+  NativeStackScreenProps<StoryStackParamList, 'StoryReader'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export function StoryReaderScreen({
+  route,
+  navigation,
+}: StoryReaderScreenProps) {
   const { storyId, chapterId } = route.params;
 
   const {

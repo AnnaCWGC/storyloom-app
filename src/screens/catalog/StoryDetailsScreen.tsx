@@ -7,24 +7,38 @@ import {
   View,
 } from 'react-native';
 import { useState } from 'react';
+import { CompositeScreenProps } from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, BookOpen, Heart, Play, Sparkles, Star } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ChapterListItem } from '../../components/story-details/ChapterListItem';
-import { ChapterAccessCard } from '../../components/story-details/ChapterAccessCard';
-import { InfoPill } from '../../components/story-details/InfoPill';
-import { NoKeysModal } from '../../components/story-details/NoKeysModal';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { GradientButton } from '../../components/ui/GradientButton';
-import { LoadingState } from '../../components/ui/LoadingState';
-import { useChapterEntry } from '../../hooks/useChapterEntry';
-import { useLibrary } from '../../hooks/useLibrary';
-import { useStory } from '../../hooks/useStory';
-import { useStoryProgress } from '../../hooks/useStoryProgress';
-import { theme } from '../../theme';
+import { ChapterListItem } from '@/components/story-details/ChapterListItem';
+import { ChapterAccessCard } from '@/components/story-details/ChapterAccessCard';
+import { InfoPill } from '@/components/story-details/InfoPill';
+import { NoKeysModal } from '@/components/story-details/NoKeysModal';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { GradientButton } from '@/components/ui/GradientButton';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { useChapterEntry } from '@/domains/reader';
+import { useLibrary } from '@/domains/library';
+import { useStory } from '@/domains/stories';
+import { useStoryProgress } from '@/domains/progress';
+import {
+  RootStackParamList,
+  StoryStackParamList,
+} from '@/navigation/navigation.types';
+import { theme } from '@/theme';
 
-export function StoryDetailsScreen({ route, navigation }: any) {
+type StoryDetailsScreenProps = CompositeScreenProps<
+  NativeStackScreenProps<StoryStackParamList, 'StoryDetails'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export function StoryDetailsScreen({
+  route,
+  navigation,
+}: StoryDetailsScreenProps) {
   const { storyId } = route.params;
   const insets = useSafeAreaInsets();
   const { story, loading, error } = useStory(storyId);
@@ -278,7 +292,7 @@ export function StoryDetailsScreen({ route, navigation }: any) {
         onClose={() => setIsNoKeysModalVisible(false)}
         onGoToRewards={() => {
           setIsNoKeysModalVisible(false);
-          navigation.getParent()?.navigate('App', {
+          navigation.navigate('App', {
             screen: 'Rewards',
           });
         }}

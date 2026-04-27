@@ -6,11 +6,11 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export function useLoadFonts() {
   const [fontsLoaded, fontError] = useFonts({
-    'CormorantGaramond-SemiBold': require('../assets/fonts/CormorantGaramond-SemiBold.ttf'),
-    'Inter-Regular': require('../assets/fonts/Inter-Variable.ttf'),
-    'Inter-Medium': require('../assets/fonts/Inter-Variable.ttf'),
-    'Inter-SemiBold': require('../assets/fonts/Inter-Variable.ttf'),
-    'Inter-Bold': require('../assets/fonts/Inter-Variable.ttf'),
+    'CormorantGaramond-SemiBold': require('@/assets/fonts/CormorantGaramond-SemiBold.ttf'),
+    'Inter-Regular': require('@/assets/fonts/Inter-Variable.ttf'),
+    'Inter-Medium': require('@/assets/fonts/Inter-Variable.ttf'),
+    'Inter-SemiBold': require('@/assets/fonts/Inter-Variable.ttf'),
+    'Inter-Bold': require('@/assets/fonts/Inter-Variable.ttf'),
   });
 
   useEffect(() => {

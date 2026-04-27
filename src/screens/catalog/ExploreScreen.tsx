@@ -1,22 +1,34 @@
 import { useState } from 'react';
+import { CompositeScreenProps } from '@react-navigation/native';
+import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { ExploreStoryRow } from '../../components/explore/ExploreStoryRow';
+import { ExploreStoryRow } from '@/components/explore/ExploreStoryRow';
 import {
   ExploreStatusFilter,
   StatusFilter,
-} from '../../components/explore/StatusFilter';
-import { GenreChips } from '../../components/home/GenreChips';
-import { SearchBar } from '../../components/home/SearchBar';
-import { StoryCoverCard } from '../../components/home/StoryCoverCard';
-import { ErrorState } from '../../components/ui/ErrorState';
-import { LoadingState } from '../../components/ui/LoadingState';
-import { ScreenContainer } from '../../components/ui/ScreenContainer';
-import { useFilteredStories } from '../../hooks/useFilteredStories';
-import { theme } from '../../theme';
+} from '@/components/explore/StatusFilter';
+import { GenreChips } from '@/components/home/GenreChips';
+import { SearchBar } from '@/components/home/SearchBar';
+import { StoryCoverCard } from '@/components/home/StoryCoverCard';
+import { ErrorState } from '@/components/ui/ErrorState';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { ScreenContainer } from '@/components/ui/ScreenContainer';
+import { useFilteredStories } from '@/domains/stories';
+import {
+  AppTabParamList,
+  RootStackParamList,
+} from '@/navigation/navigation.types';
+import { theme } from '@/theme';
 
-export function ExploreScreen({ navigation }: any) {
+type ExploreScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<AppTabParamList, 'Explore'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export function ExploreScreen({ navigation }: ExploreScreenProps) {
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');

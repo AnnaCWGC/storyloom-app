@@ -1,9 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { StoryDetailsScreen } from '../screens/catalog/StoryDetailsScreen';
-import { StoryReaderScreen } from '../screens/story/StoryReaderScreen';
+import { StoryDetailsScreen } from '@/screens/catalog/StoryDetailsScreen';
+import { StoryReaderScreen } from '@/screens/story/StoryReaderScreen';
+import { StoryStackParamList } from '@/navigation/navigation.types';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<StoryStackParamList>();
 
 export function StoryNavigator() {
   return (

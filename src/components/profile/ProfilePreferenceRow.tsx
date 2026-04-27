@@ -1,6 +1,6 @@
 import { StyleSheet, Switch, Text, View } from 'react-native';
 
-import { theme } from '../../theme';
+import { theme } from '@/theme';
 
 type ProfilePreferenceRowProps = {
   title: string;
